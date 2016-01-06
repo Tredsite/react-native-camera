@@ -10,10 +10,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 public class CameraViewManager extends ViewGroupManager<CameraView> {
     public static final String REACT_CLASS = "CameraViewAndroid";
@@ -40,9 +37,6 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @ReactProp(name = "startCapture")
     public void startCapture(CameraView view, @Nullable String flagValue) {
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss_").format(new Date());
-        String fileName = timeStamp + UUID.randomUUID();
-        view.setCapturedFileName(fileName);
         if (flagValue.equals("true")) {
             view.takePicture();
         }

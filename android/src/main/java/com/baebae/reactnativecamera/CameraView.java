@@ -48,20 +48,11 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         stopCamera();
     }
 
-    public void setCapturedFileName(String fileName) {
-        captureFileName = FileUtils.getApplicationDirectory() + fileName + ".jpg";
-    }
-
-    public String getCapturedFileName() {
-        return captureFileName;
-    }
-
     @Override
-    protected void onImageFileSaved() {
-        super.onImageFileSaved();
-
+    protected void onImageFileSaved(String imagePath) {
+        super.onImageFileSaved(imagePath);
         WritableMap event = Arguments.createMap();
-        event.putString("message", getCapturedFileName());
+        event.putString("message", imagePath);
         event.putString("type", "camera_capture");
         ReactContext reactContext = (ReactContext)getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(

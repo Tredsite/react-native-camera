@@ -22,6 +22,7 @@ import com.google.zxing.Result;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.UUID;
 
 public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCallback  {
     private Camera mCamera;
@@ -32,7 +33,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private Scan barcodeScanner = null;
     private RelativeLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
-    protected String captureFileName = "";
 
     private boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
@@ -42,8 +42,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     public final void setupLayout(Camera camera) {
-        //removeAllViews();
-
         mPreview = new CameraView(getContext(), camera, this);
         if (cameraLayout == null) {
             removeView(cameraLayout);
@@ -63,6 +61,10 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         for (int i = 0; i < index; i++) {
             viewGroup.bringChildToFront(viewGroup.getChildAt(i));
         }
+    }
+
+    private String getImageFileName() {
+        return UUID.randomUUID() + ".jpg";
     }
 
     public void startCamera(int cameraId) {
@@ -163,7 +165,8 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }
     }
 
-    protected void onImageFileSaved() {
+    protected void onImageFileSaved(String imagePath) {
+
     }
 
     protected void onBarcodeScanned(Result str) {
@@ -185,40 +188,39 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     Camera.PictureCallback callbackRAW = new Camera.PictureCallback(){
-
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             // TODO Auto-generated method stub
 
-        }};
-    PictureCallback callbackImage = new PictureCallback(){
+        }
+    };
 
+    PictureCallback callbackImage = new PictureCallback(){
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             // TODO Auto-generated method stub
             Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
             try {
-
-                File f = new File(captureFileName);
+                // Save to internal storage
+                File f = new File(context.getFilesDir(), getImageFileName());
                 f.createNewFile();
                 FileOutputStream fos = new FileOutputStream(f);
                 fos.write(arg0);
                 fos.flush();
                 fos.close();
-                onImageFileSaved();
+                onImageFileSaved(f.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }};
+        }
+    };
 
     public void takePicture() {
-        if (captureFileName.length() > 0) {
-            mCamera.takePicture(new Camera.ShutterCallback() {
-                @Override
-                public void onShutter() {
+        mCamera.takePicture(new Camera.ShutterCallback() {
+            @Override
+            public void onShutter() {
 
-                }
-            }, callbackRAW, callbackImage);
-        }
+            }
+        }, callbackRAW, callbackImage);
     }
 }
