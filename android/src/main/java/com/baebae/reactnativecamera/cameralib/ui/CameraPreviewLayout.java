@@ -202,7 +202,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
             try {
                 // Save to internal storage
-                File f = new File(context.getFilesDir(), getImageFileName());
+                File f = new File(getContext().getFilesDir(), getImageFileName());
                 f.createNewFile();
                 FileOutputStream fos = new FileOutputStream(f);
                 fos.write(arg0);

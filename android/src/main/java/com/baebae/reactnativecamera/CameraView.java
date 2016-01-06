@@ -1,6 +1,5 @@
 package com.baebae.reactnativecamera;
 
-import com.baebae.reactnativecamera.cameralib.helpers.FileUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 import com.baebae.reactnativecamera.cameralib.ui.CameraPreviewLayout;
 import com.facebook.react.bridge.LifecycleEventListener;
