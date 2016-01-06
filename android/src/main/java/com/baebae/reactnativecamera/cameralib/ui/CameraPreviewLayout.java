@@ -34,6 +34,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private CameraInstanceManager cameraInstanceManager;
     protected String captureFileName = "";
 
+    private boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
         super(context);
         barcodeScanner = new Scan(getContext());
@@ -44,9 +45,10 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         //removeAllViews();
 
         mPreview = new CameraView(getContext(), camera, this);
-        if (cameraLayout != null) {
+        if (cameraLayout == null) {
             removeView(cameraLayout);
         }
+
         cameraLayout = new RelativeLayout(getContext());
         cameraLayout.setGravity(Gravity.CENTER);
         cameraLayout.setBackgroundColor(Color.BLACK);
@@ -81,6 +83,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                     if(mFlashState != null) {
                         setFlash(mFlashState);
                     }
+                    flagPreviewInitialized = true;
                 }
             }, 1000);
             setAutoFocus(mAutofocusState);
@@ -92,16 +95,22 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     public void stopCamera() {
+        if (!flagPreviewInitialized) {
+            return;
+        }
         if(mCamera != null) {
             mPreview.stopCameraPreview();
             mPreview.setCamera(null, null);
-            mCamera.release();
-            mCamera = null;
+            cameraLayout.removeView(mPreview);
+            removeView(cameraLayout);
+            cameraLayout = null;
+            this.cameraInstanceManager.releaseCamera(mCamera);
         }
         if(mCameraHandlerThread != null) {
             mCameraHandlerThread.quit();
             mCameraHandlerThread = null;
         }
+        flagPreviewInitialized = false;
     }
 
     public void stopCameraPreview() {

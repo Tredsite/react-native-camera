@@ -107,7 +107,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
                 mPreviewing = false;
                 getHolder().removeCallback(this);
                 mCamera.cancelAutoFocus();
-                mCamera.setOneShotPreviewCallback(null);
+                mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
             } catch(Exception e) {
                 Log.e(TAG, e.toString(), e);
