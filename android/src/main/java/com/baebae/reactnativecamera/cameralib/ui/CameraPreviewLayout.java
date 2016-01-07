@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.util.Base64;
 
 import com.baebae.reactnativecamera.cameralib.barcode.Scan;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraHandlerThread;
@@ -20,9 +21,6 @@ import com.baebae.reactnativecamera.cameralib.helpers.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 import com.google.zxing.Result;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.UUID;
 
 public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCallback  {
     private Camera mCamera;
@@ -165,7 +163,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }
     }
 
-    protected void onImageFileSaved(String imagePath) {
+    protected void onImageCaptured(String data) {
 
     }
 
@@ -198,17 +196,9 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     PictureCallback callbackImage = new PictureCallback(){
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
-            // TODO Auto-generated method stub
-            Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
             try {
-                // Save to internal storage
-                File f = new File(getContext().getFilesDir(), getImageFileName());
-                f.createNewFile();
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.write(arg0);
-                fos.flush();
-                fos.close();
-                onImageFileSaved(f.getAbsolutePath());
+                String encoded = Base64.encodeToString(arg0, Base64.DEFAULT);
+                onImageCaptured(encoded);
             } catch (Exception e) {
                 e.printStackTrace();
             }
