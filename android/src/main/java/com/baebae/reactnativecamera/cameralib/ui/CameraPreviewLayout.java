@@ -61,10 +61,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }
     }
 
-    private String getImageFileName() {
-        return UUID.randomUUID() + ".jpg";
-    }
-
     public void startCamera(int cameraId) {
         if(mCameraHandlerThread == null) {
             mCameraHandlerThread = new CameraHandlerThread(this);
