@@ -48,10 +48,10 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     }
 
     @Override
-    protected void onImageCaptured(String data) {
-        super.onImageCaptured(data);
+    protected void onImageFileSaved(String imagePath) {
+        super.onImageFileSaved(imagePath);
         WritableMap event = Arguments.createMap();
-        event.putString("message", "data:image/jpeg;base64," + data);
+        event.putString("message", "file://" + imagePath);
         event.putString("type", "camera_capture");
         ReactContext reactContext = (ReactContext)getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
