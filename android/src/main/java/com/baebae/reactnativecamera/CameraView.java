@@ -49,7 +49,7 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
     @Override
     protected void onImageCaptured(String data) {
-        super.onImageFileSaved(data);
+        super.onImageCaptured(data);
         WritableMap event = Arguments.createMap();
         event.putString("message", "data:image/jpeg;base64," + data);
         event.putString("type", "camera_capture");
