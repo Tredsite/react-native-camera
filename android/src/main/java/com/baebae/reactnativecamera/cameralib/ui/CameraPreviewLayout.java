@@ -201,8 +201,8 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             // TODO Auto-generated method stub
             Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
             try {
-                // Save to internal storage
-                File f = new File(getContext().getExternalFilesDir(), getImageFileName());
+                // Save to external storage
+                File f = new File(getContext().getExternalFilesDir(null), getImageFileName());
                 f.createNewFile();
                 FileOutputStream fos = new FileOutputStream(f);
                 fos.write(arg0);
