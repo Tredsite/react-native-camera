@@ -15,7 +15,7 @@ class AndroidCameraView extends React.Component {
   _onChange(event: Event) {
     if (event.nativeEvent.type == "camera_capture") {
       if (this.onCaptureCompleted) {
-        this.onCaptureCompleted(event.nativeEvent.message);
+        this.onCaptureCompleted(null, event.nativeEvent.message);
         this.onCaptureCompleted = null;
       }
     } else if (event.nativeEvent.type == "barcode_capture") {
