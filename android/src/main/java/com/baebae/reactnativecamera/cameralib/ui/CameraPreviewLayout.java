@@ -31,7 +31,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private Boolean mFlashState;
     private boolean mAutofocusState = true;
     private Scan barcodeScanner = null;
-    private RelativeLayout cameraLayout = null;
+    private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
 
     private boolean flagPreviewInitialized = false;
@@ -47,10 +47,14 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             removeView(cameraLayout);
         }
 
-        cameraLayout = new RelativeLayout(getContext());
-        cameraLayout.setGravity(Gravity.CENTER);
+        cameraLayout = new FrameLayout(getContext());
         cameraLayout.setBackgroundColor(Color.BLACK);
         cameraLayout.addView(mPreview);
+
+//        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+//        mPreview.setLayoutParams(relativeParams);
+
         addView(cameraLayout);
         moveToBack(cameraLayout);
     }
@@ -128,8 +132,8 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     public void setFlash(boolean flag) {
+        mFlashState = flag;
         if(mCamera != null) {
-            mFlashState = flag;
             toggleTorch(flag);
         }
     }

@@ -11,6 +11,7 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
@@ -77,7 +78,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
                 mPreviewing = true;
                 setupCameraParameters();
                 mCamera.setPreviewDisplay(getHolder());
-                mCamera.setDisplayOrientation(getDisplayOrientation());
+                mCamera.setDisplayOrientation(getCameraOrientation());
                 mCamera.setPreviewCallback(mPreviewCallback);
                 mCamera.startPreview();
                 if(mAutoFocus) {
@@ -119,24 +120,29 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         Camera.Size optimalSize = getOptimalPreviewSize();
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+        parameters.setRotation(90);
         mCamera.setParameters(parameters);
         adjustViewSize(optimalSize);
     }
 
     private void adjustViewSize(Camera.Size cameraSize) {
-        Point previewSize = convertSizeToLandscapeOrientation(new Point(getWidth(), getHeight()));
-        float cameraRatio = ((float) cameraSize.width) / cameraSize.height;
-        float screenRatio = ((float) previewSize.x) / previewSize.y;
-
-        if (screenRatio > cameraRatio) {
-            setViewSize((int) (previewSize.y * cameraRatio), previewSize.y);
-        } else {
-            setViewSize(previewSize.x, (int) (previewSize.x / cameraRatio));
-        }
+        int parentWidth = ((View)getParent()).getWidth();
+        int parentHeight = ((View)getParent()).getHeight();
+        Point ptCameraSize = convertSizeToLandscapeOrientation(new Point(cameraSize.width, cameraSize.height));
+        float cameraRatio = ((float) ptCameraSize.x) / ptCameraSize.y;
+        float screenRatio = ((float) parentWidth) / parentHeight;
+        int width = parentWidth;
+        int height = (int)(width / cameraRatio);
+        setViewSize(width, height);
+//        if (screenRatio > cameraRatio) {
+//            setViewSize((int) (previewSize.y * cameraRatio), previewSize.y);
+//        } else {
+//            setViewSize(previewSize.x, (int) (previewSize.x / cameraRatio));
+//        }
     }
 
     private Point convertSizeToLandscapeOrientation(Point size) {
-        if (getDisplayOrientation() % 180 == 0) {
+        if (getCameraOrientation() % 180 == 0) {
             return size;
         } else {
             return new Point(size.y, size.x);
@@ -145,7 +151,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void setViewSize(int width, int height) {
         ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (getDisplayOrientation() % 180 == 0) {
+        if (getDisplaySurfaceOrientation() % 180 == 0) {
             layoutParams.width = width;
             layoutParams.height = height;
         } else {
@@ -155,9 +161,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         setLayoutParams(layoutParams);
     }
 
-    public int getDisplayOrientation() {
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
+    private int getDisplaySurfaceOrientation() {
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
 
@@ -169,7 +173,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
             case Surface.ROTATION_180: degrees = 180; break;
             case Surface.ROTATION_270: degrees = 270; break;
         }
+        return degrees;
+    }
+    private int getCameraOrientation() {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
 
+        int degrees = getDisplaySurfaceOrientation() ;
         int result;
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
