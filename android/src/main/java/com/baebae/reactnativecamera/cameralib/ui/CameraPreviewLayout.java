@@ -204,15 +204,24 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             // TODO Auto-generated method stub
             Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
+            if (!flagFrontCameraType) {
+                int rotateAngle = 0;
+                if (!flagFrontCameraType) {
+                    if (bitmapPicture.getWidth() > bitmapPicture.getHeight()) {
+                        rotateAngle = 90;
+                    }
+                    bitmapPicture = BitmapUtils.remakeBitmap(bitmapPicture, bitmapPicture.getWidth(), bitmapPicture.getHeight(), rotateAngle, false, false);
+                }
+            }
             try {
                 // Save to external storage
-                File f = new File(getContext().getExternalFilesDir(null), getImageFileName());
-                f.createNewFile();
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.write(arg0);
-                fos.flush();
-                fos.close();
-                onImageFileSaved(f.getAbsolutePath());
+                File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
+                file.createNewFile();
+                FileOutputStream outStream = new FileOutputStream(file);
+                bitmapPicture.compress(Bitmap.CompressFormat.PNG, 10, outStream);
+                outStream.flush();
+                outStream.close();
+                onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
