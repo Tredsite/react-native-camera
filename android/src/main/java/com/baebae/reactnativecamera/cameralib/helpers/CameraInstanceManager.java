@@ -43,10 +43,7 @@ public class CameraInstanceManager {
     public void releaseCamera(Camera camera) {
         if (camera == null) return;
         camera.release();
-        int cameraId = getCameraId(camera);
-        if (cameraId > -1) {
-            cameraInstanceList[getCameraId(camera)] = null;
-        }
+        cameraInstanceList[getCameraId(camera)] = null;
     }
 
     public int getCameraId(Camera camera) {

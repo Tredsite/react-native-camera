@@ -28,6 +28,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean mAutoFocus = true;
     private boolean mSurfaceCreated = false;
     private Camera.PreviewCallback mPreviewCallback;
+    private boolean mFrontCamera = false;
 
     public CameraView(Context context, Camera camera, Camera.PreviewCallback previewCallback) {
         super(context);
@@ -116,29 +117,34 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    /**
+     * setup camera preview, rotation angle correctly.
+     */
     public void setupCameraParameters() {
         Camera.Size optimalSize = getOptimalPreviewSize();
         Camera.Parameters parameters = mCamera.getParameters();
+
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
-        parameters.setRotation(90);
+
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            parameters.setRotation(270);
+        } else {
+            parameters.setRotation(90);
+        }
+
         mCamera.setParameters(parameters);
         adjustViewSize(optimalSize);
     }
 
     private void adjustViewSize(Camera.Size cameraSize) {
         int parentWidth = ((View)getParent()).getWidth();
-        int parentHeight = ((View)getParent()).getHeight();
         Point ptCameraSize = convertSizeToLandscapeOrientation(new Point(cameraSize.width, cameraSize.height));
         float cameraRatio = ((float) ptCameraSize.x) / ptCameraSize.y;
-        float screenRatio = ((float) parentWidth) / parentHeight;
         int width = parentWidth;
         int height = (int)(width / cameraRatio);
         setViewSize(width, height);
-//        if (screenRatio > cameraRatio) {
-//            setViewSize((int) (previewSize.y * cameraRatio), previewSize.y);
-//        } else {
-//            setViewSize(previewSize.x, (int) (previewSize.x / cameraRatio));
-//        }
     }
 
     private Point convertSizeToLandscapeOrientation(Point size) {
@@ -175,11 +181,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         }
         return degrees;
     }
+
     private int getCameraOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
 
-        int degrees = getDisplaySurfaceOrientation() ;
+        int degrees = getDisplaySurfaceOrientation();
         int result;
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
@@ -194,7 +201,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         if(mCamera == null) {
             return null;
         }
-
         List<Camera.Size> sizes = mCamera.getParameters().getSupportedPreviewSizes();
         int w = getWidth();
         int h = getHeight();

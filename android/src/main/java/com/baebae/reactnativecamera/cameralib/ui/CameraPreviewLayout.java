@@ -1,21 +1,14 @@
 package com.baebae.reactnativecamera.cameralib.ui;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
-import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import com.baebae.reactnativecamera.cameralib.barcode.Scan;
-import com.baebae.reactnativecamera.cameralib.helpers.BitmapUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraHandlerThread;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
@@ -35,7 +28,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
 
-    private boolean flagFrontCameraType = false;
     private boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
         super(context);
@@ -78,7 +70,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             mCameraHandlerThread = new CameraHandlerThread(this);
         }
         Camera camera = cameraInstanceManager.getCamera("back");
-        flagFrontCameraType = false;
         mCameraHandlerThread.startCamera(camera);
     }
 
@@ -205,27 +196,14 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     PictureCallback callbackImage = new PictureCallback(){
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
-            // TODO Auto-generated method stub
-            Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
-            if (!flagFrontCameraType) {
-                int rotateAngle = 0;
-                if (!flagFrontCameraType) {
-                    if (bitmapPicture.getWidth() > bitmapPicture.getHeight()) {
-                        rotateAngle = 90;
-                    }
-                    bitmapPicture = BitmapUtils.remakeBitmap(bitmapPicture, bitmapPicture.getWidth(), bitmapPicture.getHeight(), rotateAngle, false, false);
-                }
-            }
             try {
                 // Save to external storage
                 File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
                 file.createNewFile();
-                FileOutputStream outStream = new FileOutputStream(file);
-                bitmapPicture.compress(Bitmap.CompressFormat.PNG, 100, outStream);
-                outStream.flush();
-                outStream.close();
-                bitmapPicture.recycle();
-                bitmapPicture = null;
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(arg0);
+                fos.flush();
+                fos.close();
                 onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
