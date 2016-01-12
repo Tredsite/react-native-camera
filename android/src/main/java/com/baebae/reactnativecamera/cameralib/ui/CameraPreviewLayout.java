@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.baebae.reactnativecamera.cameralib.barcode.Scan;
+import com.baebae.reactnativecamera.cameralib.helpers.BitmapUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraHandlerThread;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
@@ -34,6 +35,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
 
+    private boolean flagFrontCameraType = false;
     private boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
         super(context);
@@ -76,6 +78,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             mCameraHandlerThread = new CameraHandlerThread(this);
         }
         Camera camera = cameraInstanceManager.getCamera("back");
+        flagFrontCameraType = false;
         mCameraHandlerThread.startCamera(camera);
     }
 
