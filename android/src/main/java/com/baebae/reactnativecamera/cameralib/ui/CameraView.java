@@ -121,11 +121,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
      * setup camera preview, rotation angle correctly.
      */
     public void setupCameraParameters() {
-        Camera.Size optimalSize = getOptimalPreviewSize();
+        Camera.Size optimalSize = getBestPreviewSize(1920, 1080);
+        Camera.Size pictureSize = getBestPictureSize(1920, 1080);
         Camera.Parameters parameters = mCamera.getParameters();
 
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
-
+        parameters.setPictureSize(pictureSize.width, pictureSize.height);
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -197,6 +198,55 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         return result;
     }
 
+    private Camera.Size getBestPreviewSize(int width, int height)
+    {
+        Camera.Size result=null;
+        if(mCamera == null) {
+            return null;
+        }
+        Camera.Parameters p = mCamera.getParameters();
+        for (Camera.Size size : p.getSupportedPreviewSizes()) {
+            if (size.width <= width && size.height <= height) {
+                if (result==null) {
+                    result=size;
+                } else {
+                    int resultArea = result.width * result.height;
+                    int newArea = size.width * size.height;
+
+                    if (newArea > resultArea) {
+                        result = size;
+                    }
+                }
+            }
+        }
+        return result;
+
+    }
+
+    private Camera.Size getBestPictureSize(int width, int height)
+    {
+        Camera.Size result=null;
+        if(mCamera == null) {
+            return null;
+        }
+        Camera.Parameters p = mCamera.getParameters();
+        for (Camera.Size size : p.getSupportedPictureSizes()) {
+            if (size.width <= width && size.height <= height) {
+                if (result==null) {
+                    result=size;
+                } else {
+                    int resultArea = result.width * result.height;
+                    int newArea = size.width * size.height;
+
+                    if (newArea > resultArea) {
+                        result = size;
+                    }
+                }
+            }
+        }
+        return result;
+
+    }
     private Camera.Size getOptimalPreviewSize() {
         if(mCamera == null) {
             return null;
