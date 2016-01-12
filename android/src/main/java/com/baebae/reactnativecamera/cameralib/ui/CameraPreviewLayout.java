@@ -224,6 +224,8 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                 bitmapPicture.compress(Bitmap.CompressFormat.PNG, 100, outStream);
                 outStream.flush();
                 outStream.close();
+                bitmapPicture.recycle();
+                bitmapPicture = null;
                 onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
