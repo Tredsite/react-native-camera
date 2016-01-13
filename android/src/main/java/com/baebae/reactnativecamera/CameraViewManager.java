@@ -31,8 +31,18 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
     @Override
     protected CameraView createViewInstance(ThemedReactContext context) {
         cameraView = new CameraView(context, cameraInstanceManager);
-        cameraView.startCamera();
         return cameraView;
+    }
+
+    @ReactProp(name = "startCamera")
+    public void startCamera(CameraView view, @Nullable String flagValue) {
+        if (flagValue.equals("true")) {
+            view.startCamera();
+            view.registerLifecycleEventListener();
+        } else if (flagValue.equals("false")) {
+            view.stopCamera();
+            view.unregisterLifecycleEventListener();
+        }
     }
 
     @ReactProp(name = "startCapture")

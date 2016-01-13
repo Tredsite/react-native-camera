@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react-native');
-var { requireNativeComponent, PropTypes, View } = React;
+var { requireNativeComponent, PropTypes, View, InteractionManager } = React;
 
 var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView);
 
@@ -24,7 +24,22 @@ class AndroidCameraView extends React.Component {
       }
     }
   }
+  
+  componentDidMount() {
+    InteractionManager.runAfterInteractions(() => {
+      this._root.setNativeProps({
+        startCamera: "true"
+      });
+    });
 
+  }
+
+  componentWillUnmount() {
+    this._root.setNativeProps({
+      startCamera: "false"
+    });
+  }
+    
   capture(callback) {
     this.onCaptureCompleted = callback;
     this._root.setNativeProps({

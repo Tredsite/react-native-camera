@@ -113,18 +113,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         flagPreviewInitialized = false;
     }
 
-    public void stopCameraPreview() {
-        if(mPreview != null) {
-            mPreview.stopCameraPreview();
-        }
-    }
-
-    protected void resumeCameraPreview() {
-        if(mPreview != null) {
-            mPreview.showCameraPreview();
-        }
-    }
-
     public void setFlash(boolean flag) {
         mFlashState = flag;
         if(mCamera != null) {

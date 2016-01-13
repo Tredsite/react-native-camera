@@ -14,7 +14,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
     public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager) {
         super(context, cameraInstanceManager);
-        context.addLifecycleEventListener(this);
     }
 
     private final Runnable mLayoutRunnable = new Runnable() {
@@ -25,6 +24,14 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
             layout(getLeft(), getTop(), getRight(), getBottom());
         }
     };
+
+    public void registerLifecycleEventListener() {
+        ((ThemedReactContext)getContext()).addLifecycleEventListener(this);
+    }
+
+    public void unregisterLifecycleEventListener() {
+        ((ThemedReactContext)getContext()).removeLifecycleEventListener(this);
+    }
 
     @Override
     public void requestLayout() {
