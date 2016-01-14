@@ -14,7 +14,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
+import android.widget.FrameLayout;
 import com.baebae.reactnativecamera.cameralib.helpers.DisplayUtils;
 
 import java.util.List;
