@@ -157,7 +157,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void setViewSize(int width, int height) {
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)getLayoutParams();
         if (getDisplaySurfaceOrientation() % 180 == 0) {
             layoutParams.width = width;
             layoutParams.height = height;
@@ -165,8 +165,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
             layoutParams.width = height;
             layoutParams.height = width;
         }
+
+        int parentHeight = ((View)getParent()).getHeight();
+
+        layoutParams.topMargin = (parentHeight - height) / 2;
         setLayoutParams(layoutParams);
     }
+
 
     private int getDisplaySurfaceOrientation() {
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
