@@ -139,15 +139,15 @@ RCT_EXPORT_METHOD(checkDeviceAuthorizationStatus:(RCTResponseSenderBlock) callba
   __block NSString *mediaType = AVMediaTypeVideo;
 
   [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
-    if (!granted) {
+//    if (!granted) {
       callback(@[[NSNull null], @(granted)]);
-    }
-    else {
-      mediaType = AVMediaTypeAudio;
-      [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
-        callback(@[[NSNull null], @(granted)]);
-      }];
-    }
+//    }
+//    else {
+//      mediaType = AVMediaTypeAudio;
+//      [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
+//        callback(@[[NSNull null], @(granted)]);
+//      }];
+//    }
   }];
 }
 
