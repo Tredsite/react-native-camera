@@ -38,6 +38,8 @@
 
 - (void)setType:(NSInteger)type
 {
+  if (self.manager.presetCamera == type)
+	  return;
   if (self.manager.session.isRunning) {
     [self.manager changeCamera:type];
   }
@@ -96,6 +98,11 @@
   if ((self = [super init])) {
     self.manager = manager;
     self.bridge = bridge;
+	  
+	if (self.manager.presetCamera == AVCaptureDevicePositionUnspecified) {
+		self.manager.presetCamera = AVCaptureDevicePositionBack;
+	}
+	  
     UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchToZoomRecognizer:)];
     [self addGestureRecognizer:pinchGesture];
     [self.manager initializeCaptureSessionInput:AVMediaTypeVideo];

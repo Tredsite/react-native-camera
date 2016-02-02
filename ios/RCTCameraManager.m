@@ -136,19 +136,19 @@ RCT_EXPORT_VIEW_PROPERTY(onZoomChanged, BOOL)
 
 RCT_EXPORT_METHOD(checkDeviceAuthorizationStatus:(RCTResponseSenderBlock) callback)
 {
-  __block NSString *mediaType = AVMediaTypeVideo;
-
-  [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
-//    if (!granted) {
-      callback(@[[NSNull null], @(granted)]);
-//    }
-//    else {
-//      mediaType = AVMediaTypeAudio;
-//      [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
-//        callback(@[[NSNull null], @(granted)]);
-//      }];
-//    }
-  }];
+	__block NSString *mediaType = AVMediaTypeVideo;
+	
+	[AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
+		//    if (!granted) {
+		callback(@[[NSNull null], @(granted)]);
+		//    }
+		//    else {
+		//      mediaType = AVMediaTypeAudio;
+		//      [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
+		//        callback(@[[NSNull null], @(granted)]);
+		//      }];
+		//    }
+	}];
 }
 
 RCT_EXPORT_METHOD(changeCamera:(NSInteger)camera) {
@@ -243,9 +243,6 @@ RCT_EXPORT_METHOD(stopCapture) {
 #endif
 	
   dispatch_async(self.sessionQueue, ^{
-    if (self.presetCamera == AVCaptureDevicePositionUnspecified) {
-      self.presetCamera = AVCaptureDevicePositionBack;
-    }
     
     AVCaptureStillImageOutput *stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
     if ([self.session canAddOutput:stillImageOutput])
@@ -348,7 +345,7 @@ RCT_EXPORT_METHOD(stopCapture) {
 	  
 	[self.session commitConfiguration];
 	//set camera torch mode
-    {
+	if (type == AVMediaTypeVideo) {
 		AVCaptureDevice *device = [captureDeviceInput device];
 		NSError *error1 = nil;
 		
