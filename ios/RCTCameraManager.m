@@ -216,16 +216,7 @@ RCT_EXPORT_METHOD(changeOrientation:(NSInteger)orientation) {
 }
 
 RCT_EXPORT_METHOD(changeTorchMode:(NSInteger)torchMode) {
-  AVCaptureDevice *device = [self.videoCaptureDeviceInput device];
-  NSError *error = nil;
-
-  if (![device hasTorch]) return;
-  if (![device lockForConfiguration:&error]) {
-    NSLog(@"%@", error);
-    return;
-  }
-  [device setTorchMode: torchMode];
-  [device unlockForConfiguration];
+    self.torchMode = torchMode;
 }
 
 RCT_EXPORT_METHOD(capture:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback) {
@@ -354,8 +345,24 @@ RCT_EXPORT_METHOD(stopCapture) {
       }
       [self.metadataOutput setMetadataObjectTypes:self.metadataOutput.availableMetadataObjectTypes];
     }
-
-    [self.session commitConfiguration];
+	  
+	[self.session commitConfiguration];
+	//set camera torch mode
+    {
+		AVCaptureDevice *device = [captureDeviceInput device];
+		NSError *error1 = nil;
+		
+		if (self.torchMode) {
+			if (![device hasTorch])
+				return;
+			if (![device lockForConfiguration:&error]) {
+				NSLog(@"%@", error1);
+				return;
+			}
+			[device setTorchMode: self.torchMode];
+			[device unlockForConfiguration];
+		}
+    }
   });
 }
 
