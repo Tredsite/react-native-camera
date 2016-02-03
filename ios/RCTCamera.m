@@ -99,14 +99,11 @@
     self.manager = manager;
     self.bridge = bridge;
 	  
-	if (self.manager.presetCamera == AVCaptureDevicePositionUnspecified) {
-		self.manager.presetCamera = AVCaptureDevicePositionBack;
-	}
 	  
     UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchToZoomRecognizer:)];
     [self addGestureRecognizer:pinchGesture];
-    [self.manager initializeCaptureSessionInput:AVMediaTypeVideo];
-    [self.manager startSession];
+	  
+	
     _multipleTouches = NO;
     _onFocusChanged = NO;
     _defaultOnFocusComponent = YES;
@@ -137,7 +134,6 @@
 
 - (void)removeFromSuperview
 {
-  [self.manager stopSession];
   [super removeFromSuperview];
   [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
 }

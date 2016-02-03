@@ -61,6 +61,7 @@ typedef NS_ENUM(NSInteger, RCTCameraTorchMode) {
 @property (nonatomic, strong) RCTResponseSenderBlock videoCallback;
 @property (nonatomic, strong) RCTCamera *camera;
 @property (nonatomic) NSInteger torchMode;
+@property (nonatomic) BOOL flagCameraStarted;
 
 - (void)changeAspect:(NSString *)aspect;
 - (void)changeCamera:(NSInteger)camera;

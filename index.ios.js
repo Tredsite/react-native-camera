@@ -82,12 +82,17 @@ var Camera = React.createClass({
     this.cameraBarCodeReadListener = DeviceEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead);
   },
 
+  componentDidMount() {
+    NativeModules.CameraManager.startCamera();
+  },
+
   componentWillUnmount() {
     this.cameraBarCodeReadListener.remove();
-    
+
     if (this.state.isRecording) {
       this.stopCapture();
     }
+    NativeModules.CameraManager.stopCamera();
   },
 
   render() {

@@ -120,7 +120,7 @@ RCT_EXPORT_VIEW_PROPERTY(onZoomChanged, BOOL)
 - (id)init {
 
   if ((self = [super init])) {
-
+	self.flagCameraStarted = FALSE;
     self.session = [AVCaptureSession new];
     self.session.sessionPreset = AVCaptureSessionPresetHigh;
 
@@ -194,6 +194,25 @@ RCT_EXPORT_METHOD(changeCamera:(NSInteger)camera) {
   });
 }
 
+RCT_EXPORT_METHOD(startCamera) {
+	if (self.presetCamera == AVCaptureDevicePositionUnspecified) {
+		self.presetCamera = AVCaptureDevicePositionBack;
+	}
+	if (self.flagCameraStarted == FALSE) {
+		[self initializeCaptureSessionInput:AVMediaTypeVideo];
+		[self startSession];
+		[self setCameraTorchMode];
+	}
+	self.flagCameraStarted = TRUE;
+}
+
+RCT_EXPORT_METHOD(stopCamera) {
+	if (self.flagCameraStarted) {
+		[self stopSession];
+	}
+	self.flagCameraStarted = FALSE;
+}
+
 RCT_EXPORT_METHOD(changeAspect:(NSString *)aspect) {
   self.previewLayer.videoGravity = aspect;
 }
@@ -236,7 +255,25 @@ RCT_EXPORT_METHOD(stopCapture) {
     [self.movieFileOutput stopRecording];
   }
 }
-
+- (void)setCameraTorchMode {
+	
+	//set camera torch mode
+	dispatch_async(self.sessionQueue, ^{
+		AVCaptureDevice *device = [self.videoCaptureDeviceInput device];
+		NSError *error1 = nil;
+			
+		if (self.torchMode) {
+			if (![device hasTorch])
+				return;
+			if (![device lockForConfiguration:&error1]) {
+				NSLog(@"%@", error1);
+				return;
+			}
+			[device setTorchMode: self.torchMode];
+			[device unlockForConfiguration];
+		}
+	});
+}
 - (void)startSession {
 #if TARGET_IPHONE_SIMULATOR
   return;
@@ -344,22 +381,6 @@ RCT_EXPORT_METHOD(stopCapture) {
     }
 	  
 	[self.session commitConfiguration];
-	//set camera torch mode
-	if (type == AVMediaTypeVideo) {
-		AVCaptureDevice *device = [captureDeviceInput device];
-		NSError *error1 = nil;
-		
-		if (self.torchMode) {
-			if (![device hasTorch])
-				return;
-			if (![device lockForConfiguration:&error]) {
-				NSLog(@"%@", error1);
-				return;
-			}
-			[device setTorchMode: self.torchMode];
-			[device unlockForConfiguration];
-		}
-    }
   });
 }
 
