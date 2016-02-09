@@ -2,6 +2,7 @@ package com.baebae.reactnativecamera;
 
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 
+import android.app.Activity;
 import android.support.annotation.Nullable;
 import android.view.View;
 
@@ -18,9 +19,11 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
     private CameraView cameraView = null;
     private CameraInstanceManager cameraInstanceManager;
 
-    public CameraViewManager(ReactApplicationContext reactApplicationContext, CameraInstanceManager cameraInstanceManager) {
+    private Activity appActivity = null;
+    public CameraViewManager(ReactApplicationContext reactApplicationContext, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         this.reactApplicationContext = reactApplicationContext;
         this.cameraInstanceManager = cameraInstanceManager;
+        this.appActivity = appActivity;
     }
 
     @Override
@@ -30,7 +33,7 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @Override
     protected CameraView createViewInstance(ThemedReactContext context) {
-        cameraView = new CameraView(context, cameraInstanceManager);
+        cameraView = new CameraView(context, cameraInstanceManager, appActivity);
         return cameraView;
     }
 

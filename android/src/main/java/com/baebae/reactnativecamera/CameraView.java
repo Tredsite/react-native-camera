@@ -1,5 +1,15 @@
 package com.baebae.reactnativecamera;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.view.Display;
+
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 import com.baebae.reactnativecamera.cameralib.ui.CameraPreviewLayout;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -12,8 +22,82 @@ import com.google.zxing.Result;
 
 public class CameraView extends CameraPreviewLayout implements LifecycleEventListener{
 
-    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager) {
-        super(context, cameraInstanceManager);
+    private Activity appActivity = null;
+    private SensorManager sensorManager = null;
+    private SensorEventListener orientationListener = null;
+    private int mOrientation = -1;
+
+    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
+        super(context, cameraInstanceManager, appActivity);
+        this.appActivity = appActivity;
+
+        initializeOrientationListener();
+    }
+
+    public static final int ORIENTATION_UNKNOWN = -1;
+    private void initializeOrientationListener() {
+        sensorManager = (SensorManager)appActivity.getSystemService(Context.SENSOR_SERVICE);
+
+        orientationListener = new SensorEventListener() {
+            private static final int _DATA_X = 0;
+            private static final int _DATA_Y = 1;
+            private static final int _DATA_Z = 2;
+
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                float[] values = event.values;
+                int orientation = ORIENTATION_UNKNOWN;
+                float X = -values[_DATA_X];
+                float Y = -values[_DATA_Y];
+                float Z = -values[_DATA_Z];
+                float magnitude = X*X + Y*Y;
+                // Don't trust the angle if the magnitude is small compared to the y value
+                if (magnitude * 4 >= Z*Z) {
+                    float OneEightyOverPi = 57.29577957855f;
+                    float angle = (float)Math.atan2(-Y, X) * OneEightyOverPi;
+                    orientation = 90 - (int)Math.round(angle);
+                    // normalize to 0 - 359 range
+                    while (orientation >= 360) {
+                        orientation -= 360;
+                    }
+                    while (orientation < 0) {
+                        orientation += 360;
+                    }
+                }
+                if (orientation != mOrientation) {
+                    int tmpOrientation = getGeneralOrientation(orientation);
+                    if (mOrientation != tmpOrientation) {
+                        mOrientation = tmpOrientation;
+
+                        if (mOrientation == 90) {
+                            appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                            changeCameraOrientation(mOrientation);
+                            onOrientationChanged(true);
+                        }
+                        if (mOrientation == 0) {
+                            appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                            changeCameraOrientation(mOrientation);
+                            onOrientationChanged(false);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                // TODO Auto-generated method stub
+
+            }
+        };
+        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    private static int getGeneralOrientation(int degrees){
+        if(degrees >= 330 || degrees <= 30 ) return 90;
+        if(degrees <= 300 && degrees >= 240) return 0;
+        if(degrees <= 210 && degrees >= 160) return 90;
+        if(degrees <= 120 && degrees >= 60) return 0;
+        return -1;
     }
 
     private final Runnable mLayoutRunnable = new Runnable() {
@@ -69,6 +153,18 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
         stopCamera();
         startCamera();
+    }
+
+    protected void onOrientationChanged(boolean portraitMode) {
+        WritableMap event = Arguments.createMap();
+        event.putBoolean("portraitMode", portraitMode);
+        event.putString("type", "orientation_changed");
+        ReactContext reactContext = (ReactContext)getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                "topChange",
+                event
+        );
     }
 
     @Override

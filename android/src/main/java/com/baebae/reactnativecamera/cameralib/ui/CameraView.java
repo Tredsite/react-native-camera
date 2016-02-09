@@ -1,5 +1,6 @@
 package com.baebae.reactnativecamera.cameralib.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -8,6 +9,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import com.baebae.reactnativecamera.cameralib.helpers.DisplayUtils;
+import com.facebook.react.uimanager.ViewGroupManager;
 
 import java.util.List;
 
@@ -30,8 +33,11 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     private Camera.PreviewCallback mPreviewCallback;
     private boolean mFrontCamera = false;
 
-    public CameraView(Context context, Camera camera, Camera.PreviewCallback previewCallback) {
+    private Activity appActivity = null;
+    private static int orientation = 90;
+    public CameraView(Activity context, Camera camera, Camera.PreviewCallback previewCallback) {
         super(context);
+        this.appActivity = context;
         init(camera, previewCallback);
     }
 
@@ -79,7 +85,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
                 mPreviewing = true;
                 setupCameraParameters();
                 mCamera.setPreviewDisplay(getHolder());
-                mCamera.setDisplayOrientation(getCameraOrientation());
+                mCamera.setDisplayOrientation(orientation);
                 mCamera.setPreviewCallback(mPreviewCallback);
                 mCamera.startPreview();
                 if(mAutoFocus) {
@@ -116,12 +122,27 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
     }
+    private Camera.Size optimalSize = null;
+    public static void changeOrientation(int orientation) {
+        CameraView.orientation = orientation;
+    }
+
+    protected void changeCameraOrientation(int orientation) {
+        changeOrientation(orientation);
+        if (mCamera != null) {
+            mCamera.setDisplayOrientation(orientation);
+            if (optimalSize != null) {
+                adjustViewSize(optimalSize, orientation);
+            }
+        }
+    }
+
 
     /**
      * setup camera preview, rotation angle correctly.
      */
     public void setupCameraParameters() {
-        Camera.Size optimalSize = getBestPreviewSize(1920, 1080);
+        optimalSize = getBestPreviewSize(1920, 1080);
         Camera.Size pictureSize = getBestPictureSize(1920, 1080);
         Camera.Parameters parameters = mCamera.getParameters();
 
@@ -129,23 +150,44 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         parameters.setPictureSize(pictureSize.width, pictureSize.height);
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            parameters.setRotation(270);
-        } else {
-            parameters.setRotation(90);
-        }
+//        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//            parameters.setRotation(270);
+//        } else {
+//            parameters.setRotation(90);
+//        }
 
         mCamera.setParameters(parameters);
-        adjustViewSize(optimalSize);
+        adjustViewSize(optimalSize, orientation);
     }
 
-    private void adjustViewSize(Camera.Size cameraSize) {
-        int parentWidth = ((View)getParent()).getWidth();
+    private void adjustViewSize(Camera.Size cameraSize, int orientation) {
+
+        Display display = appActivity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int parentWidth = size.x;
+        int parentHeight = size.y;
+
         Point ptCameraSize = convertSizeToLandscapeOrientation(new Point(cameraSize.width, cameraSize.height));
-        float cameraRatio = ((float) ptCameraSize.x) / ptCameraSize.y;
-        int width = parentWidth;
-        int height = (int)(width / cameraRatio);
-        setViewSize(width, height);
+        if (orientation == 90) {
+            float cameraRatio = ((float) ptCameraSize.x) / ptCameraSize.y;
+            int width = parentWidth;
+            if (parentWidth > parentHeight) {
+                width = parentHeight;
+            }
+
+            int height = (int)(width / cameraRatio);
+            setViewSize(width, height);
+        } else {
+            float cameraRatio = ((float) ptCameraSize.x) / ptCameraSize.y;
+            int height = parentWidth;
+            if (parentWidth > parentHeight) {
+                height = parentHeight;
+            }
+            int width = (int)(height * cameraRatio);
+            setViewSize(height, width);
+        }
+
     }
 
     private Point convertSizeToLandscapeOrientation(Point size) {
@@ -158,18 +200,35 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void setViewSize(int width, int height) {
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)getLayoutParams();
+        FrameLayout.LayoutParams parentParams = (FrameLayout.LayoutParams)((View)getParent()).getLayoutParams();
+        ViewGroup.LayoutParams parentParentParms =((View)getParent().getParent()).getLayoutParams();
         if (getDisplaySurfaceOrientation() % 180 == 0) {
             layoutParams.width = width;
             layoutParams.height = height;
+
+            parentParams.width = width;
+            parentParams.height = height;
+            parentParams.gravity = Gravity.LEFT | Gravity.TOP;
+            layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
         } else {
             layoutParams.width = height;
             layoutParams.height = width;
-        }
 
+            parentParams.width = height;
+            parentParams.height = width;
+            parentParams.gravity = Gravity.LEFT | Gravity.TOP;
+            layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+        }
         int parentHeight = ((View)getParent()).getHeight();
 
         layoutParams.topMargin = (parentHeight - height) / 2;
         setLayoutParams(layoutParams);
+        ((View)getParent()).setLayoutParams(parentParams);
+
+        ViewGroup.LayoutParams param = ((View)getParent().getParent()).getLayoutParams();
+        param.width = parentParams.width;
+        param.height = parentParams.height;
+        ((View)getParent().getParent()).setLayoutParams(param);
     }
 
 

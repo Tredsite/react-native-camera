@@ -1,5 +1,7 @@
 package com.baebae.reactnativecamera;
 
+import android.app.Activity;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -15,8 +17,9 @@ import java.util.List;
 public class CameraViewPackage implements ReactPackage {
     private CameraViewManager cameraViewManager = null;
     private CameraInstanceManager cameraInstanceManager;
-
-    public CameraViewPackage() {
+    private Activity appActivity = null;
+    public CameraViewPackage(Activity appActivity) {
+        this.appActivity = appActivity;
         this.cameraInstanceManager = new CameraInstanceManager();
     }
 
@@ -27,7 +30,7 @@ public class CameraViewPackage implements ReactPackage {
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
-        cameraViewManager = new CameraViewManager(reactApplicationContext, cameraInstanceManager);
+        cameraViewManager = new CameraViewManager(reactApplicationContext, cameraInstanceManager, appActivity);
         return Arrays.<ViewManager>asList(
                 cameraViewManager
         );

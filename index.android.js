@@ -22,13 +22,16 @@ class AndroidCameraView extends React.Component {
       if (this.props.onBarCodeRead) {
         this.props.onBarCodeRead(event.nativeEvent.message);
       }
+    } else if (event.nativeEvent.type == "orientation_changed") {
+      if (this.props.onOrientationChanged) {
+        this.props.onOrientationChanged(event.nativeEvent.portraitMode);
+      }
     }
   }
   
   componentDidMount() {
     this._root.setNativeProps({
-      startCamera: "true"
-    });
+      startCamera: "true"});
   }
 
   componentWillUnmount() {
@@ -64,11 +67,13 @@ AndroidCameraView.propTypes = {
   ...View.propTypes,
   startCapture: PropTypes.string,
   onBarCodeRead: PropTypes.func,
+  onOrientationChanged: PropTypes.func,
   torchMode:PropTypes.bool,
 };
 
 AndroidCameraView.defaultProps = {
   onBarCodeRead: null,
+  onOrientationChanged: null,
   torchMode: true
 }
 

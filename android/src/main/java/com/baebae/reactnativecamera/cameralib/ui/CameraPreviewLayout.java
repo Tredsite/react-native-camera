@@ -1,17 +1,13 @@
 package com.baebae.reactnativecamera.cameralib.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.util.Log;
 
 import com.baebae.reactnativecamera.cameralib.barcode.Scan;
 import com.baebae.reactnativecamera.cameralib.helpers.CameraHandlerThread;
@@ -21,7 +17,6 @@ import com.google.zxing.Result;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCallback  {
@@ -33,16 +28,37 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private Scan barcodeScanner = null;
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
-
+    private Activity appActivity = null;
     private boolean flagPreviewInitialized = false;
-    public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
+    public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         super(context);
+        this.appActivity = appActivity;
         barcodeScanner = new Scan(getContext());
         this.cameraInstanceManager = cameraInstanceManager;
     }
 
+    protected  void changeCameraOrientation(int orientation) {
+        CameraView.changeOrientation(orientation);
+        if (mPreview != null) {
+            mPreview.changeCameraOrientation(orientation);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    moveShow(cameraLayout);
+                }
+            }, 300);
+            appActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    moveHide(cameraLayout);
+                }
+            });
+
+        }
+    }
+
     public final void setupLayout(Camera camera) {
-        mPreview = new CameraView(getContext(), camera, this);
+        mPreview = new CameraView(appActivity, camera, this);
         if (cameraLayout == null) {
             removeView(cameraLayout);
         }
@@ -60,10 +76,23 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     private void moveToBack(View currentView) {
-        ViewGroup viewGroup = ((ViewGroup) currentView.getParent());
-        int index = viewGroup.indexOfChild(currentView);
-        for (int i = 0; i < index; i++) {
-            viewGroup.bringChildToFront(viewGroup.getChildAt(i));
+        if (currentView != null) {
+            ViewGroup viewGroup = ((ViewGroup) currentView.getParent());
+            viewGroup.invalidate();
+            int index = viewGroup.indexOfChild(currentView);
+            for (int i = 0; i < index; i++) {
+                viewGroup.bringChildToFront(viewGroup.getChildAt(i));
+            }
+        }
+    }
+    private void moveHide(View currentView) {
+        if (currentView != null) {
+            currentView.setVisibility(GONE);
+        }
+    }
+    private void moveShow(View currentView) {
+        if (currentView != null) {
+            currentView.setVisibility(VISIBLE);
         }
     }
 
@@ -101,16 +130,21 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     public void stopCamera() {
-        if (!flagPreviewInitialized) {
-            return;
-        }
-        if(mCamera != null) {
-            mPreview.stopCameraPreview();
-            mPreview.setCamera(null, null);
+        if (cameraLayout != null) {
             cameraLayout.removeView(mPreview);
             removeView(cameraLayout);
             cameraLayout = null;
+        }
+
+        if (!flagPreviewInitialized) {
+            return;
+        }
+        if (mCamera != null) {
+            mPreview.stopCameraPreview();
+            mPreview.setCamera(null, null);
+
             this.cameraInstanceManager.releaseCamera(mCamera);
+            mCamera = null;
         }
         if(mCameraHandlerThread != null) {
             mCameraHandlerThread.quit();
@@ -191,21 +225,11 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             try {
-                byte[] pictureBytes;
-                Bitmap thePicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
-                Matrix m = new Matrix();
-                m.postRotate(90);
-                thePicture = Bitmap.createBitmap(thePicture, 0, 0, thePicture.getWidth(), thePicture.getHeight(), m, true);
-
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                thePicture.compress(CompressFormat.JPEG, 100, bos);
-                pictureBytes = bos.toByteArray();
-
                 // Save to external storage
                 File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
                 file.createNewFile();
                 FileOutputStream fos = new FileOutputStream(file);
-                fos.write(pictureBytes);
+                fos.write(arg0);
                 fos.flush();
                 fos.close();
                 onImageFileSaved(file.getAbsolutePath());
@@ -224,4 +248,3 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }, callbackRAW, callbackImage);
     }
 }
-
