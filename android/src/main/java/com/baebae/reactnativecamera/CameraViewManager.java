@@ -57,11 +57,11 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @ReactProp(name = "torchMode")
     public void toggleTorch(CameraView view, @Nullable Boolean flagValue) {
-//        if (flagValue) {
-//            view.setFlash(true);
-//        } else {
-//            view.setFlash(false);
-//        }
+        if (flagValue) {
+            view.setFlash(true);
+        } else {
+            view.setFlash(false);
+        }
     }
 
     @Override
