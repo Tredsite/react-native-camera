@@ -274,11 +274,69 @@ RCT_EXPORT_METHOD(stopCapture) {
 		}
 	});
 }
+#define kAccelerometerFrequency        10.0
+- (void)outputAccelertionData:(CMAcceleration)acceleration{
+	UIInterfaceOrientation orientationNew;
+	
+	if (acceleration.x >= 0.75) {
+		orientationNew = UIInterfaceOrientationLandscapeLeft;
+	}
+	else if (acceleration.x <= -0.75) {
+		orientationNew = UIInterfaceOrientationLandscapeRight;
+	}
+	else if (acceleration.y <= -0.75) {
+		orientationNew = UIInterfaceOrientationPortrait;
+	}
+	else if (acceleration.y >= 0.75) {
+		orientationNew = UIInterfaceOrientationPortraitUpsideDown;
+	}
+	else {
+		// Consider same as last time
+		return;
+	}
+	
+	if (orientationNew == self.orientationLast)
+		return;
+	
+	NSString* flagPortrait = @"true";
+	if ( orientationNew == UIInterfaceOrientationLandscapeRight || orientationNew == UIInterfaceOrientationLandscapeLeft) {
+		flagPortrait = @"false";
+	}
+	
+	[self.bridge.eventDispatcher sendDeviceEventWithName:@"CameraOrientationChanged"
+														body:@{
+															   @"mode": flagPortrait
+														}];
+	
+
+	self.orientationLast = orientationNew;
+}
+
+- (void)initializeMotionManager{
+	self.motionManager = [[CMMotionManager alloc] init];
+	self.motionManager.accelerometerUpdateInterval = .2;
+	self.motionManager.gyroUpdateInterval = .2;
+	self.motionManager.deviceMotionUpdateInterval = .2;
+	[self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
+										withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
+											if (!error) {
+												[self outputAccelertionData:accelerometerData.acceleration];
+											}
+											else{
+												NSLog(@"%@", error);
+											}
+										}];
+}
+
+- (void)deInitializeMotionManager {
+	[self.motionManager stopAccelerometerUpdates];
+}
+
 - (void)startSession {
 #if TARGET_IPHONE_SIMULATOR
   return;
 #endif
-	
+	[self initializeMotionManager];
   dispatch_async(self.sessionQueue, ^{
     
     AVCaptureStillImageOutput *stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
@@ -321,7 +379,7 @@ RCT_EXPORT_METHOD(stopCapture) {
 #if TARGET_IPHONE_SIMULATOR
   return;
 #endif
-	
+	[self deInitializeMotionManager];
   dispatch_async(self.sessionQueue, ^{
     [self.previewLayer removeFromSuperlayer];
     [self.session stopRunning];

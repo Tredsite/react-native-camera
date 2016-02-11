@@ -1,6 +1,6 @@
 #import "RCTViewManager.h"
 #import <AVFoundation/AVFoundation.h>
-
+#import <CoreMotion/CoreMotion.h>
 @class RCTCamera;
 
 typedef NS_ENUM(NSInteger, RCTCameraAspect) {
@@ -62,6 +62,9 @@ typedef NS_ENUM(NSInteger, RCTCameraTorchMode) {
 @property (nonatomic, strong) RCTCamera *camera;
 @property (nonatomic) NSInteger torchMode;
 @property (nonatomic) BOOL flagCameraStarted;
+@property (nonatomic) UIInterfaceOrientation orientationLast;
+@property (nonatomic) UIInterfaceOrientation orientationAfterProcess;
+@property (nonatomic) CMMotionManager *motionManager;
 
 - (void)changeAspect:(NSString *)aspect;
 - (void)changeCamera:(NSInteger)camera;

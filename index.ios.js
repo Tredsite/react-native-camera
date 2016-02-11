@@ -80,6 +80,7 @@ var Camera = React.createClass({
       this.setState(this.state);
     }).bind(this));
     this.cameraBarCodeReadListener = DeviceEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead);
+    this.cameraOrientationChanged = DeviceEventEmitter.addListener('CameraOrientationChanged', this._onOrientationChanged);
   },
 
   componentDidMount() {
@@ -88,6 +89,7 @@ var Camera = React.createClass({
 
   componentWillUnmount() {
     this.cameraBarCodeReadListener.remove();
+    this.cameraOrientationChanged.remove();
 
     if (this.state.isRecording) {
       this.stopCapture();
@@ -156,6 +158,11 @@ var Camera = React.createClass({
 
   _onBarCodeRead(e) {
     this.props.onBarCodeRead && this.props.onBarCodeRead(e);
+  },
+
+  _onOrientationChanged(e) {
+    console.info("_onOrientationChanged" + JSON.stringify(e) + this.props.onOrientationChanged);
+    this.props.onOrientationChanged && this.props.onOrientationChanged(JSON.parse(e.mode));
   },
 
   capture(options, cb) {
