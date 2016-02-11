@@ -161,7 +161,6 @@ var Camera = React.createClass({
   },
 
   _onOrientationChanged(e) {
-    console.info("_onOrientationChanged" + JSON.stringify(e) + this.props.onOrientationChanged);
     this.props.onOrientationChanged && this.props.onOrientationChanged(JSON.parse(e.mode));
   },
 
