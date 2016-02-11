@@ -161,7 +161,8 @@ var Camera = React.createClass({
   },
 
   _onOrientationChanged(e) {
-    this.props.onOrientationChanged && this.props.onOrientationChanged(JSON.parse(e.mode));
+    var isPortrait = JSON.parse(e.mode);
+    this.props.onOrientationChanged && this.props.onOrientationChanged({ orientation: isPortrait ? 'portrait' : 'landscape' });
   },
 
   capture(options, cb) {

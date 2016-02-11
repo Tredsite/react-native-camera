@@ -31,7 +31,7 @@ class AndroidCameraView extends React.Component {
       }
     } else if (event.nativeEvent.type == "orientation_changed") {
       if (this.props.onOrientationChanged) {
-        this.props.onOrientationChanged(event.nativeEvent.portraitMode);
+        this.props.onOrientationChanged({ orientation: event.nativeEvent.portraitMode ? 'portrait' : 'landscape' });
         if (event.nativeEvent.portraitMode) {
           this.orientationMode = "portrait";
         } else {
