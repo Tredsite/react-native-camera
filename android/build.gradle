@@ -17,6 +17,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.0.0'
-    compile 'com.facebook.react:react-native:0.17.1'
+    compile 'com.facebook.react:react-native:0.19.+'
     compile 'com.google.zxing:core:3.2.1'
 }
