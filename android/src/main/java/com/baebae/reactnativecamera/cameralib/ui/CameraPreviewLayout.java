@@ -2,7 +2,10 @@ package com.baebae.reactnativecamera.cameralib.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.view.View;
@@ -224,17 +227,63 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }
     };
 
+    public static Bitmap remakeBitmap(Bitmap bm, int newWidth, int newHeight, int rotateAngle, boolean horizontalMirror, boolean verticalMirror) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+        //get width, height scale from old one..
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        //apply matrix
+        if (horizontalMirror) {
+            matrix.postScale(scaleWidth, -scaleHeight);
+        } else if (verticalMirror){
+            matrix.postScale(-scaleWidth, scaleHeight);
+        } else {
+            matrix.postScale(scaleWidth, scaleHeight);
+        }
+        if (rotateAngle != 0) {
+            matrix.postRotate(rotateAngle);
+        }
+
+        // "RECREATE" THE NEW BITMAP, recycle old bitmap
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+
+
     PictureCallback callbackImage = new PictureCallback(){
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             try {
+                Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
+                int rotateAngle = 0;
+                if (flagCapturePortraitMode) {
+                    if (bitmapPicture.getWidth() > bitmapPicture.getHeight()) {
+                        rotateAngle = 90;
+                    }
+                } else {
+                    if (bitmapPicture.getWidth() < bitmapPicture.getHeight()) {
+                        rotateAngle = 90;
+                    }
+                }
+                bitmapPicture = remakeBitmap(bitmapPicture, bitmapPicture.getWidth(), bitmapPicture.getHeight(), rotateAngle, false, false);
+
                 // Save to external storage
                 File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
                 file.createNewFile();
-                FileOutputStream fos = new FileOutputStream(file);
-                fos.write(arg0);
-                fos.flush();
-                fos.close();
+
+                FileOutputStream outStream = new FileOutputStream(file);
+                bitmapPicture.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+                outStream.flush();
+                outStream.close();
+                bitmapPicture.recycle();
+                bitmapPicture = null;
+
                 onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
