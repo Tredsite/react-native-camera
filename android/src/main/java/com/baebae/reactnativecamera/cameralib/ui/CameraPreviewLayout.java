@@ -37,7 +37,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         this.cameraInstanceManager = cameraInstanceManager;
     }
 
-    protected  void changeCameraOrientation(int orientation) {
+    protected  void changeCameraOrientation(final int orientation, final Runnable callback) {
         CameraView.changeOrientation(orientation);
         if (mPreview != null) {
             mPreview.changeCameraOrientation(orientation);
@@ -45,12 +45,14 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                 @Override
                 public void run() {
                     moveShow(cameraLayout);
+                    callback.run();
                 }
             }, 300);
             appActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     moveHide(cameraLayout);
+
                 }
             });
 
@@ -213,6 +215,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         });
     }
 
+    private boolean flagCapturePortraitMode = true;
     Camera.PictureCallback callbackRAW = new Camera.PictureCallback(){
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
@@ -239,7 +242,8 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         }
     };
 
-    public void takePicture() {
+    public void takePicture(boolean flagMode) {
+        flagCapturePortraitMode = flagMode;
         mCamera.takePicture(new Camera.ShutterCallback() {
             @Override
             public void onShutter() {

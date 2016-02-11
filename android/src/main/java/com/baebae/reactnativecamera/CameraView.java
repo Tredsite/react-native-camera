@@ -35,6 +35,12 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     }
 
     public static final int ORIENTATION_UNKNOWN = -1;
+    private static final int ORIENTATION_KEEP_THRESHOLD = 3;
+    private static final int ORIENTATION_TIME_THRESHOLD = 500;
+    private static int orientationKeepCount = 0;
+    private static long lastOrientationTime = 0;
+    private static int lastOrientationValue = ORIENTATION_UNKNOWN;
+    private boolean flagOrientationChanged = false;
     private void initializeOrientationListener() {
         sensorManager = (SensorManager)appActivity.getSystemService(Context.SENSOR_SERVICE);
 
@@ -51,6 +57,8 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                 float Y = -values[_DATA_Y];
                 float Z = -values[_DATA_Z];
                 float magnitude = X*X + Y*Y;
+                long now = System.currentTimeMillis();
+
                 // Don't trust the angle if the magnitude is small compared to the y value
                 if (magnitude * 4 >= Z*Z) {
                     float OneEightyOverPi = 57.29577957855f;
@@ -68,16 +76,34 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                     int tmpOrientation = getGeneralOrientation(orientation);
                     if (mOrientation != tmpOrientation) {
                         mOrientation = tmpOrientation;
-
-                        if (mOrientation == 90) {
-                            appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                            changeCameraOrientation(mOrientation);
-                            onOrientationChanged(true);
-                        }
-                        if (mOrientation == 0) {
-                            appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                            changeCameraOrientation(mOrientation);
-                            onOrientationChanged(false);
+                        lastOrientationTime = now;
+                        orientationKeepCount = 0;
+                        flagOrientationChanged = false;
+                    } else {
+                        orientationKeepCount ++;
+                        if (orientationKeepCount > ORIENTATION_KEEP_THRESHOLD && (now - lastOrientationTime) > ORIENTATION_TIME_THRESHOLD
+                                && flagOrientationChanged == false && lastOrientationValue != mOrientation) {
+                            flagOrientationChanged = true;
+                            if (mOrientation == 90) {
+                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                changeCameraOrientation(mOrientation, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lastOrientationValue = mOrientation;
+                                    }
+                                });
+                                onOrientationChanged(true);
+                            }
+                            if (mOrientation == 0) {
+                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                changeCameraOrientation(mOrientation, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lastOrientationValue = mOrientation;
+                                    }
+                                });
+                                onOrientationChanged(false);
+                            }
                         }
                     }
                 }

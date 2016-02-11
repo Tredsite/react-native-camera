@@ -1,15 +1,22 @@
 'use strict';
 
 var React = require('react-native');
-var { requireNativeComponent, PropTypes, View } = React;
+var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
+var ReactNativeAttributePayload=require('ReactNativeAttributePayload');
+var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView,
+  {
+    nativeOnly: {startCapture: 'true'}
+  }
+);
 
-var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView);
+var merge = require('merge');
 
 class AndroidCameraView extends React.Component {
   constructor() {
     super();
     this._onChange = this._onChange.bind(this);
     this.onCaptureCompleted = null;
+    this.orientationMode = "";
   }
 
   _onChange(event: Event) {
@@ -25,25 +32,32 @@ class AndroidCameraView extends React.Component {
     } else if (event.nativeEvent.type == "orientation_changed") {
       if (this.props.onOrientationChanged) {
         this.props.onOrientationChanged(event.nativeEvent.portraitMode);
+        if (event.nativeEvent.portraitMode) {
+          this.orientationMode = "portrait";
+        } else {
+          this.orientationMode = "landscape";
+        }
       }
     }
   }
   
   componentDidMount() {
+
     this._root.setNativeProps({
-      startCamera: "true"});
+      startCamera: true
+    });
   }
 
   componentWillUnmount() {
     this._root.setNativeProps({
-      startCamera: "false"
+      startCamera: false
     });
   }
     
   capture(callback) {
     this.onCaptureCompleted = callback;
     this._root.setNativeProps({
-      startCapture: "true"
+      startCapture: this.orientationMode
     })
   }
 
@@ -65,7 +79,7 @@ class AndroidCameraView extends React.Component {
 
 AndroidCameraView.propTypes = {
   ...View.propTypes,
-  startCapture: PropTypes.string,
+  startCapture: PropTypes.bool,
   onBarCodeRead: PropTypes.func,
   onOrientationChanged: PropTypes.func,
   torchMode:PropTypes.bool,
@@ -73,6 +87,7 @@ AndroidCameraView.propTypes = {
 
 AndroidCameraView.defaultProps = {
   onBarCodeRead: null,
+  startCapture: false,
   onOrientationChanged: null,
   torchMode: true
 }

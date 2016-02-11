@@ -38,11 +38,11 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
     }
 
     @ReactProp(name = "startCamera")
-    public void startCamera(CameraView view, @Nullable String flagValue) {
-        if (flagValue.equals("true")) {
+    public void startCamera(CameraView view, @Nullable Boolean flagValue) {
+        if (flagValue) {
             view.startCamera();
             view.registerLifecycleEventListener();
-        } else if (flagValue.equals("false")) {
+        } else if (flagValue) {
             view.stopCamera();
             view.unregisterLifecycleEventListener();
         }
@@ -50,8 +50,10 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @ReactProp(name = "startCapture")
     public void startCapture(CameraView view, @Nullable String flagValue) {
-        if (flagValue.equals("true")) {
-            view.takePicture();
+        if (flagValue.equals("portrait")) {
+            view.takePicture(true);
+        } else  if (flagValue.equals("landscape")) {
+            view.takePicture(false);
         }
     }
 
