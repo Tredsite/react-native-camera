@@ -3,10 +3,7 @@
 var React = require('react-native');
 var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
 var ReactNativeAttributePayload=require('ReactNativeAttributePayload');
-var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView,
-  {
-    nativeOnly: {startCapture: 'true'}
-  }
+var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView
 );
 
 var merge = require('merge');
@@ -31,7 +28,7 @@ class AndroidCameraView extends React.Component {
       }
     } else if (event.nativeEvent.type == "orientation_changed") {
       if (this.props.onOrientationChanged) {
-        this.props.onOrientationChanged(event.nativeEvent.portraitMode);
+        this.props.onOrientationChanged({ orientation: event.nativeEvent.portraitMode ? 'portrait' : 'landscape' });
         if (event.nativeEvent.portraitMode) {
           this.orientationMode = "portrait";
         } else {
@@ -40,9 +37,8 @@ class AndroidCameraView extends React.Component {
       }
     }
   }
-  
-  componentDidMount() {
 
+  componentDidMount() {
     this._root.setNativeProps({
       startCamera: true
     });
@@ -53,27 +49,27 @@ class AndroidCameraView extends React.Component {
       startCamera: false
     });
   }
-    
+
   capture(callback) {
     this.onCaptureCompleted = callback;
     this._root.setNativeProps({
       startCapture: this.orientationMode
-    })
+    });
   }
 
   toggleTorch(mode) {
     this._root.setNativeProps({
       torchMode: mode
-    })
+    });
   }
 
   render() {
     return (
       <NativeAndroidCameraView
-          ref={component => this._root = component}
-        {...this.props} onChange={this._onChange}
-        values={this.props.values} selected={this.props.selected} />
-    );
+    ref={component => this._root = component}
+    {...this.props} onChange={this._onChange}
+    values={this.props.values} selected={this.props.selected} />
+  );
   }
 }
 
@@ -92,6 +88,6 @@ AndroidCameraView.defaultProps = {
   startCamera: false,
   onOrientationChanged: null,
   torchMode: true
-}
+};
 
 module.exports = AndroidCameraView;
