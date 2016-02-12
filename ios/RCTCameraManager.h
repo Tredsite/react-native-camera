@@ -60,7 +60,7 @@ typedef NS_ENUM(NSInteger, RCTCameraTorchMode) {
 @property (nonatomic) NSInteger videoTarget;
 @property (nonatomic, strong) RCTResponseSenderBlock videoCallback;
 @property (nonatomic, strong) RCTCamera *camera;
-@property (nonatomic) NSInteger torchMode;
+@property (nonatomic) BOOL torchMode;
 @property (nonatomic) BOOL flagCameraStarted;
 @property (nonatomic) UIInterfaceOrientation orientationLast;
 @property (nonatomic) UIInterfaceOrientation orientationAfterProcess;
@@ -70,7 +70,7 @@ typedef NS_ENUM(NSInteger, RCTCameraTorchMode) {
 - (void)changeCamera:(NSInteger)camera;
 - (void)changeOrientation:(NSInteger)orientation;
 - (void)changeFlashMode:(NSInteger)flashMode;
-- (void)changeTorchMode:(NSInteger)torchMode;
+- (void)changeTorchMode:(BOOL)torchMode;
 - (AVCaptureDevice *)deviceWithMediaType:(NSString *)mediaType preferringPosition:(AVCaptureDevicePosition)position;
 - (void)capture:(NSDictionary*)options callback:(RCTResponseSenderBlock)callback;
 - (void)initializeCaptureSessionInput:(NSString*)type;

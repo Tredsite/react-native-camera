@@ -29,7 +29,7 @@ RCT_EXPORT_VIEW_PROPERTY(aspect, NSInteger);
 RCT_EXPORT_VIEW_PROPERTY(type, NSInteger);
 RCT_EXPORT_VIEW_PROPERTY(orientation, NSInteger);
 RCT_EXPORT_VIEW_PROPERTY(flashMode, NSInteger);
-RCT_EXPORT_VIEW_PROPERTY(torchMode, NSInteger);
+RCT_EXPORT_VIEW_PROPERTY(torchMode, BOOL);
 
 - (NSDictionary *)constantsToExport
 {
@@ -78,13 +78,8 @@ RCT_EXPORT_VIEW_PROPERTY(torchMode, NSInteger);
                @"off": @(RCTCameraFlashModeOff),
                @"on": @(RCTCameraFlashModeOn),
                @"auto": @(RCTCameraFlashModeAuto)
-               },
-           @"TorchMode": @{
-               @"off": @(RCTCameraTorchModeOff),
-               @"on": @(RCTCameraTorchModeOn),
-               @"auto": @(RCTCameraTorchModeAuto)
                }
-           };
+		   };
 }
 
 - (NSArray *)getBarCodeTypes {
@@ -234,7 +229,7 @@ RCT_EXPORT_METHOD(changeOrientation:(NSInteger)orientation) {
   self.previewLayer.connection.videoOrientation = orientation;
 }
 
-RCT_EXPORT_METHOD(changeTorchMode:(NSInteger)torchMode) {
+RCT_EXPORT_METHOD(changeTorchMode:(BOOL)torchMode) {
     self.torchMode = torchMode;
 }
 
@@ -298,9 +293,13 @@ RCT_EXPORT_METHOD(stopCapture) {
 	if (orientationNew == self.orientationLast)
 		return;
 	
-	NSString* flagPortrait = @"true";
-	if ( orientationNew == UIInterfaceOrientationLandscapeRight || orientationNew == UIInterfaceOrientationLandscapeLeft) {
-		flagPortrait = @"false";
+	NSString* flagPortrait = @"portrait";
+	if ( orientationNew == UIInterfaceOrientationLandscapeRight) {
+		flagPortrait = @"landscape_right";
+	}
+	
+	if ( orientationNew == UIInterfaceOrientationLandscapeLeft) {
+		flagPortrait = @"landscape_left";
 	}
 	
 	[self.bridge.eventDispatcher sendDeviceEventWithName:@"CameraOrientationChanged"
