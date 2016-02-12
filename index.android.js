@@ -79,7 +79,8 @@ class AndroidCameraView extends React.Component {
 
 AndroidCameraView.propTypes = {
   ...View.propTypes,
-  startCapture: PropTypes.bool,
+  startCapture: PropTypes.string,
+  startCamera: PropTypes.bool,
   onBarCodeRead: PropTypes.func,
   onOrientationChanged: PropTypes.func,
   torchMode:PropTypes.bool,
@@ -87,7 +88,8 @@ AndroidCameraView.propTypes = {
 
 AndroidCameraView.defaultProps = {
   onBarCodeRead: null,
-  startCapture: false,
+  startCapture: "",
+  startCamera: false,
   onOrientationChanged: null,
   torchMode: true
 }
