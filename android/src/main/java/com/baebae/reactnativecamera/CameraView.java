@@ -92,9 +92,17 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                                     }
                                 });
                                 onOrientationChanged(true);
-                            }
-                            if (mOrientation == 0) {
+                            } else if (mOrientation == 0) {
                                 appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                changeCameraOrientation(mOrientation, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lastOrientationValue = mOrientation;
+                                    }
+                                });
+                                onOrientationChanged(false);
+                            } else if (mOrientation == 180) {
+                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
                                 changeCameraOrientation(mOrientation, new Runnable() {
                                     @Override
                                     public void run() {
@@ -121,7 +129,7 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         if(degrees >= 330 || degrees <= 30 ) return 90;
         if(degrees <= 300 && degrees >= 240) return 0;
         if(degrees <= 210 && degrees >= 160) return 90;
-        if(degrees <= 120 && degrees >= 60) return 0;
+        if(degrees <= 120 && degrees >= 60) return 180;
         return -1;
     }
 
