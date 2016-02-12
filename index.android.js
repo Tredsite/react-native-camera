@@ -52,8 +52,13 @@ class AndroidCameraView extends React.Component {
 
   capture(callback) {
     this.onCaptureCompleted = callback;
+    var orientationMode = this.orientationMode;
+    if (!orientationMode) {
+      orientationMode = "portrait";
+    }
+
     this._root.setNativeProps({
-      startCapture: this.orientationMode
+      startCapture: orientationMode
     });
   }
 

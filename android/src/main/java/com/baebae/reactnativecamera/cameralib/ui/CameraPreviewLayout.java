@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -32,7 +33,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
     private Activity appActivity = null;
-    private boolean flagPreviewInitialized = false;
+    private static boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         super(context);
         this.appActivity = appActivity;
@@ -78,6 +79,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
         addView(cameraLayout);
         moveToBack(cameraLayout);
+
     }
 
     private void moveToBack(View currentView) {
@@ -124,26 +126,40 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                         setFlash(mFlashState);
                     }
                     flagPreviewInitialized = true;
+                    registerLifecycleEventListener();
                 }
             }, 1000);
             setAutoFocus(mAutofocusState);
         }
     }
 
+    protected void unregisterLifecycleEventListener() {
+    }
+    protected void registerLifecycleEventListener() {
+    }
+
     public void startCamera() {
         startCamera(-1);
     }
 
+    public boolean isRunning() {
+        return flagPreviewInitialized;
+    }
     public void stopCamera() {
+        if (!flagPreviewInitialized) {
+            return;
+        }
+
+        unregisterLifecycleEventListener();
+        if (cameraLayout == null && mCamera == null) {
+            Log.d("CrashCase", "stopCamera " + this + " " + mPreview + " " + mCamera);
+        }
         if (cameraLayout != null) {
             cameraLayout.removeView(mPreview);
             removeView(cameraLayout);
             cameraLayout = null;
         }
-
-        if (!flagPreviewInitialized) {
-            return;
-        }
+        flagPreviewInitialized = false;
         if (mCamera != null) {
             mPreview.stopCameraPreview();
             mPreview.setCamera(null, null);
@@ -155,7 +171,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             mCameraHandlerThread.quit();
             mCameraHandlerThread = null;
         }
-        flagPreviewInitialized = false;
     }
 
     public void setFlash(boolean flag) {

@@ -1,6 +1,7 @@
 package com.baebae.reactnativecamera.cameralib.helpers;
 
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.Surface;
 
 public class CameraInstanceManager {
@@ -43,7 +44,15 @@ public class CameraInstanceManager {
     public void releaseCamera(Camera camera) {
         if (camera == null) return;
         camera.release();
-        cameraInstanceList[getCameraId(camera)] = null;
+        int cameraID = getCameraId(camera);
+        if (cameraID != -1) {
+            cameraInstanceList[getCameraId(camera)] = null;
+        } else {
+            camera = null;
+            for (int i= 0; i < cameraInstanceList.length; i ++) {
+                cameraInstanceList[i] = null;
+            }
+        }
     }
 
     public int getCameraId(Camera camera) {

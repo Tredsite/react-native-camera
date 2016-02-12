@@ -4,6 +4,7 @@ import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 
 import android.app.Activity;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -33,18 +34,27 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @Override
     protected CameraView createViewInstance(ThemedReactContext context) {
+        if (cameraView != null && cameraView.isRunning()) {
+            cameraView.stopCamera();
+        }
         cameraView = new CameraView(context, cameraInstanceManager, appActivity);
         return cameraView;
+    }
+
+    private void startCamera() {
+        cameraView.startCamera();
+    }
+
+    private void stopCamera() {
+        cameraView.stopCamera();
     }
 
     @ReactProp(name = "startCamera")
     public void startCamera(CameraView view, @Nullable Boolean flagValue) {
         if (flagValue) {
-            view.startCamera();
-            view.registerLifecycleEventListener();
-        } else if (flagValue) {
-            view.stopCamera();
-            view.unregisterLifecycleEventListener();
+            startCamera();
+        } else {
+            stopCamera();
         }
     }
 

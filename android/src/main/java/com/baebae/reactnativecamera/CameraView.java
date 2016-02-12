@@ -31,7 +31,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         super(context, cameraInstanceManager, appActivity);
         this.appActivity = appActivity;
 
-        initializeOrientationListener();
     }
 
     public static final int ORIENTATION_UNKNOWN = -1;
@@ -115,7 +114,7 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
             }
         };
-        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+
     }
 
     private static int getGeneralOrientation(int degrees){
@@ -135,12 +134,20 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         }
     };
 
-    public void registerLifecycleEventListener() {
+    @Override
+    protected void registerLifecycleEventListener() {
+        super.registerLifecycleEventListener();
         ((ThemedReactContext)getContext()).addLifecycleEventListener(this);
+        initializeOrientationListener();
+        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
     }
 
-    public void unregisterLifecycleEventListener() {
+    @Override
+    protected void unregisterLifecycleEventListener() {
+        super.unregisterLifecycleEventListener();
         ((ThemedReactContext)getContext()).removeLifecycleEventListener(this);
+        if (orientationListener != null)
+            sensorManager.unregisterListener(orientationListener);
     }
 
     @Override
@@ -178,7 +185,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         );
 
         stopCamera();
-        startCamera();
     }
 
     protected void onOrientationChanged(boolean portraitMode) {
