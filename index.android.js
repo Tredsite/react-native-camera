@@ -40,9 +40,8 @@ class AndroidCameraView extends React.Component {
       }
     }
   }
-  
-  componentDidMount() {
 
+  componentDidMount() {
     this._root.setNativeProps({
       startCamera: true
     });
@@ -53,33 +52,33 @@ class AndroidCameraView extends React.Component {
       startCamera: false
     });
   }
-    
+
   capture(callback) {
     this.onCaptureCompleted = callback;
     this._root.setNativeProps({
       startCapture: this.orientationMode
-    })
+    });
   }
 
   toggleTorch(mode) {
     this._root.setNativeProps({
       torchMode: mode
-    })
+    });
   }
 
   render() {
     return (
       <NativeAndroidCameraView
-          ref={component => this._root = component}
-        {...this.props} onChange={this._onChange}
-        values={this.props.values} selected={this.props.selected} />
-    );
+    ref={component => this._root = component}
+    {...this.props} onChange={this._onChange}
+    values={this.props.values} selected={this.props.selected} />
+  );
   }
 }
 
 AndroidCameraView.propTypes = {
   ...View.propTypes,
-  startCapture: PropTypes.bool,
+  startCapture: PropTypes.string,
   onBarCodeRead: PropTypes.func,
   onOrientationChanged: PropTypes.func,
   torchMode:PropTypes.bool,
@@ -87,9 +86,9 @@ AndroidCameraView.propTypes = {
 
 AndroidCameraView.defaultProps = {
   onBarCodeRead: null,
-  startCapture: false,
+  startCapture: null,
   onOrientationChanged: null,
   torchMode: true
-}
+};
 
 module.exports = AndroidCameraView;

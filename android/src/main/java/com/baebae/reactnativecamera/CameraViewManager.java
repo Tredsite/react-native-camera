@@ -50,9 +50,9 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
 
     @ReactProp(name = "startCapture")
     public void startCapture(CameraView view, @Nullable String flagValue) {
-        if (flagValue.equals("portrait")) {
+        if (flagValue != null && flagValue.equals("portrait")) {
             view.takePicture(true);
-        } else  if (flagValue.equals("landscape")) {
+        } else if (flagValue != null && flagValue.equals("landscape")) {
             view.takePicture(false);
         }
     }
