@@ -9,7 +9,7 @@
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <AVFoundation/AVFoundation.h>
 #import <ImageIO/ImageIO.h>
-
+#import "Orientation.h"
 @implementation RCTCameraManager
 
 RCT_EXPORT_MODULE();
@@ -269,7 +269,7 @@ RCT_EXPORT_METHOD(stopCapture) {
 		}
 	});
 }
-#define kAccelerometerFrequency        10.0
+
 - (void)outputAccelertionData:(CMAcceleration)acceleration{
 	UIInterfaceOrientation orientationNew;
 	
@@ -283,39 +283,44 @@ RCT_EXPORT_METHOD(stopCapture) {
 		orientationNew = UIInterfaceOrientationPortrait;
 	}
 	else if (acceleration.y >= 0.75) {
-		orientationNew = UIInterfaceOrientationPortraitUpsideDown;
+		orientationNew = UIInterfaceOrientationPortrait;
 	}
 	else {
 		// Consider same as last time
 		return;
 	}
 	
-	if (orientationNew == self.orientationLast)
-		return;
-	
-	NSString* flagPortrait = @"portrait";
-	if ( orientationNew == UIInterfaceOrientationLandscapeRight) {
-		flagPortrait = @"landscape_right";
-	}
-	
-	if ( orientationNew == UIInterfaceOrientationLandscapeLeft) {
-		flagPortrait = @"landscape_left";
-	}
-	
-	[self.bridge.eventDispatcher sendDeviceEventWithName:@"CameraOrientationChanged"
+	if (orientationNew != self.orientationLast) {
+		NSString* flagPortrait = @"portrait";
+		if ( orientationNew == UIInterfaceOrientationLandscapeRight) {
+			flagPortrait = @"landscape_right";
+		}
+		
+		if ( orientationNew == UIInterfaceOrientationLandscapeLeft) {
+			flagPortrait = @"landscape_left";
+		}
+		
+		NSLog(@"Orientation chaged");
+		[self.bridge.eventDispatcher sendAppEventWithName:@"CameraOrientationChanged"
 														body:@{
 															   @"mode": flagPortrait
-														}];
-	
-
-	self.orientationLast = orientationNew;
+															   }];
+		
+		if (orientationNew == UIInterfaceOrientationPortrait) {
+			[Orientation setOrientation:1];
+		} else {
+			[Orientation setOrientation:2];
+		}
+		
+		self.orientationLast = orientationNew;
+	}
 }
 
 - (void)initializeMotionManager{
 	self.motionManager = [[CMMotionManager alloc] init];
-	self.motionManager.accelerometerUpdateInterval = .2;
-	self.motionManager.gyroUpdateInterval = .2;
-	self.motionManager.deviceMotionUpdateInterval = .2;
+	self.motionManager.accelerometerUpdateInterval = .1;
+	self.motionManager.gyroUpdateInterval = .1;
+	self.motionManager.deviceMotionUpdateInterval = .1;
 	[self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
 										withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
 											if (!error) {
@@ -335,7 +340,6 @@ RCT_EXPORT_METHOD(stopCapture) {
 #if TARGET_IPHONE_SIMULATOR
   return;
 #endif
-	[self initializeMotionManager];
   dispatch_async(self.sessionQueue, ^{
     
     AVCaptureStillImageOutput *stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
@@ -371,6 +375,8 @@ RCT_EXPORT_METHOD(stopCapture) {
     }]];
     
     [self.session startRunning];
+	  
+	[self initializeMotionManager];
   });
 }
 
@@ -378,8 +384,9 @@ RCT_EXPORT_METHOD(stopCapture) {
 #if TARGET_IPHONE_SIMULATOR
   return;
 #endif
-	[self deInitializeMotionManager];
   dispatch_async(self.sessionQueue, ^{
+	  
+	[self deInitializeMotionManager];
     [self.previewLayer removeFromSuperlayer];
     [self.session stopRunning];
     for(AVCaptureInput *input in self.session.inputs) {

@@ -1,5 +1,5 @@
 var React = require('react-native');
-var { StyleSheet, requireNativeComponent, PropTypes, NativeModules, DeviceEventEmitter } = React;
+var { StyleSheet, requireNativeComponent, PropTypes, NativeModules, DeviceEventEmitter, NativeAppEventEmitter } = React;
 
 var CAMERA_REF = 'camera';
 
@@ -77,7 +77,7 @@ var Camera = React.createClass({
       this.setState(this.state);
     }).bind(this));
     this.cameraBarCodeReadListener = DeviceEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead);
-    this.cameraOrientationChanged = DeviceEventEmitter.addListener('CameraOrientationChanged', this._onOrientationChanged);
+    this.cameraOrientationChanged = NativeAppEventEmitter.addListener('CameraOrientationChanged', this._onOrientationChanged);
   },
 
   componentDidMount() {
