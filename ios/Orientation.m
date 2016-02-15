@@ -100,7 +100,6 @@ RCT_EXPORT_METHOD(getOrientation:(RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(lockToPortrait)
 {
-  NSLog(@"Locked to Portrait");
   [Orientation setOrientation:1];
 	[[NSOperationQueue mainQueue] addOperationWithBlock:^ {
 		[[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
@@ -112,7 +111,6 @@ RCT_EXPORT_METHOD(lockToPortrait)
 
 RCT_EXPORT_METHOD(lockToLandscapeLeft)
 {
-  NSLog(@"Locked to lockToLandscapeLeft");
   [Orientation setOrientation:2];
   [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
 	  [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
@@ -123,7 +121,6 @@ RCT_EXPORT_METHOD(lockToLandscapeLeft)
 
 RCT_EXPORT_METHOD(lockToLandscapeRight)
 {
-	NSLog(@"Locked to lockToLandscapeRight");
 	[Orientation setOrientation:2];
 	[[NSOperationQueue mainQueue] addOperationWithBlock:^ {
 		[[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight];
