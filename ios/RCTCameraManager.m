@@ -318,9 +318,9 @@ RCT_EXPORT_METHOD(stopCapture) {
 
 - (void)initializeMotionManager{
 	self.motionManager = [[CMMotionManager alloc] init];
-	self.motionManager.accelerometerUpdateInterval = .1;
-	self.motionManager.gyroUpdateInterval = .1;
-	self.motionManager.deviceMotionUpdateInterval = .1;
+	self.motionManager.accelerometerUpdateInterval = .5;
+	self.motionManager.gyroUpdateInterval = .5;
+	self.motionManager.deviceMotionUpdateInterval = .5;
 	[self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
 										withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
 											if (!error) {
