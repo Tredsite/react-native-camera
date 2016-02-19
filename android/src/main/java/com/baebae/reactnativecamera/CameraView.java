@@ -50,7 +50,7 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
             @Override
             public void onSensorChanged(SensorEvent event) {
-                float[] values = event.values;
+                /*float[] values = event.values;
                 int orientation = ORIENTATION_UNKNOWN;
                 float X = -values[_DATA_X];
                 float Y = -values[_DATA_Y];
@@ -113,7 +113,7 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                             }
                         }
                     }
-                }
+                }*/
             }
 
             @Override

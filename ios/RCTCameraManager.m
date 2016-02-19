@@ -300,7 +300,6 @@ RCT_EXPORT_METHOD(stopCapture) {
 			flagPortrait = @"landscape_left";
 		}
 		
-		NSLog(@"Orientation chaged");
 		[self.bridge.eventDispatcher sendAppEventWithName:@"CameraOrientationChanged"
 														body:@{
 															   @"mode": flagPortrait
