@@ -43,24 +43,24 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
     protected  void changeCameraOrientation(final int orientation, final Runnable callback) {
         CameraView.changeOrientation(orientation);
-        if (mPreview != null) {
-            mPreview.changeCameraOrientation(orientation);
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    moveShow(cameraLayout);
-                    callback.run();
-                }
-            }, 300);
-            appActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    moveHide(cameraLayout);
-
-                }
-            });
-
-        }
+//        if (mPreview != null) {
+//            mPreview.changeCameraOrientation(orientation);
+//            postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    //moveShow(cameraLayout);
+//                    callback.run();
+//                }
+//            }, 300);
+//            appActivity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    moveHide(cameraLayout);
+//
+//                }
+//            });
+//
+//        }
     }
 
     public final void setupLayout(Camera camera) {
@@ -71,37 +71,47 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
         cameraLayout = new FrameLayout(getContext());
         cameraLayout.setBackgroundColor(Color.BLACK);
-        cameraLayout.addView(mPreview);
+        cameraLayout.addView(mPreview, 0);
 
 //        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 //        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 //        mPreview.setLayoutParams(relativeParams);
 
-        addView(cameraLayout);
-        moveToBack(cameraLayout);
+        addView(cameraLayout, 0);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                moveToBack(cameraLayout);
+            }
+        }, 300);
+
 
     }
 
     private void moveToBack(View currentView) {
         if (currentView != null) {
             ViewGroup viewGroup = ((ViewGroup) currentView.getParent());
-            viewGroup.invalidate();
             int index = viewGroup.indexOfChild(currentView);
             for (int i = 0; i < index; i++) {
-                viewGroup.bringChildToFront(viewGroup.getChildAt(i));
+                View v = viewGroup.getChildAt(i);
+                v.bringToFront();
+                Log.d("Test", "Move to back" + v);
+                viewGroup.bringChildToFront(v);
             }
+            viewGroup.invalidate();
+            ((View)currentView.getParent()).requestLayout();
         }
     }
-    private void moveHide(View currentView) {
-        if (currentView != null) {
-            currentView.setVisibility(GONE);
-        }
-    }
-    private void moveShow(View currentView) {
-        if (currentView != null) {
-            currentView.setVisibility(VISIBLE);
-        }
-    }
+//    private void moveHide(View currentView) {
+//        if (currentView != null) {
+//            currentView.setVisibility(GONE);
+//        }
+//    }
+//    private void moveShow(View currentView) {
+//        if (currentView != null) {
+//            currentView.setVisibility(VISIBLE);
+//        }
+//    }
 
     private String getImageFileName() {
         return UUID.randomUUID() + ".jpg";
@@ -293,7 +303,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                 file.createNewFile();
 
                 FileOutputStream outStream = new FileOutputStream(file);
-                bitmapPicture.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+                bitmapPicture.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                 outStream.flush();
                 outStream.close();
                 bitmapPicture.recycle();

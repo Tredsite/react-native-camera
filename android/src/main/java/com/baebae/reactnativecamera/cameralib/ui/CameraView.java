@@ -211,6 +211,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
                 parentParams.height = height;
                 parentParams.gravity = Gravity.LEFT | Gravity.TOP;
                 layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+                int parentHeight = ((View)getParent()).getHeight();
+                layoutParams.topMargin = (parentHeight - height) / 2;
             } else {
                 layoutParams.width = height;
                 layoutParams.height = width;
@@ -220,9 +223,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
                 parentParams.gravity = Gravity.LEFT | Gravity.TOP;
                 layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
             }
-            int parentHeight = ((View)getParent()).getHeight();
 
-            layoutParams.topMargin = (parentHeight - height) / 2;
             setLayoutParams(layoutParams);
             ((View)getParent()).setLayoutParams(parentParams);
 
