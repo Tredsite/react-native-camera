@@ -9,7 +9,7 @@
 #import "RCTEventDispatcher.h"
 #import "AppDelegate.h"
 
-@interface Orientation : NSObject <RCTBridgeModule>
+@interface LockOrientation : NSObject <RCTBridgeModule>
 + (void)setOrientation: (int)orientation;
 + (int)getOrientation;
 @end

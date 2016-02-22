@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,24 +44,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
     protected  void changeCameraOrientation(final int orientation, final Runnable callback) {
         CameraView.changeOrientation(orientation);
-//        if (mPreview != null) {
-//            mPreview.changeCameraOrientation(orientation);
-//            postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    //moveShow(cameraLayout);
-//                    callback.run();
-//                }
-//            }, 300);
-//            appActivity.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    moveHide(cameraLayout);
-//
-//                }
-//            });
-//
-//        }
     }
 
     public final void setupLayout(Camera camera) {
@@ -102,16 +85,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             ((View)currentView.getParent()).requestLayout();
         }
     }
-//    private void moveHide(View currentView) {
-//        if (currentView != null) {
-//            currentView.setVisibility(GONE);
-//        }
-//    }
-//    private void moveShow(View currentView) {
-//        if (currentView != null) {
-//            currentView.setVisibility(VISIBLE);
-//        }
-//    }
 
     private String getImageFileName() {
         return UUID.randomUUID() + ".jpg";
@@ -276,7 +249,9 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
         // "RECREATE" THE NEW BITMAP, recycle old bitmap
         Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
-        bm.recycle();
+        if (resizedBitmap != bm) {
+            bm.recycle();
+        }
         return resizedBitmap;
     }
 
@@ -285,30 +260,29 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             try {
-                Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
+                Bitmap oldBitmap = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
                 int rotateAngle = 0;
                 if (flagCapturePortraitMode) {
-                    if (bitmapPicture.getWidth() > bitmapPicture.getHeight()) {
+                    if (oldBitmap.getWidth() > oldBitmap.getHeight()) {
                         rotateAngle = 90;
                     }
                 } else {
-                    if (bitmapPicture.getWidth() < bitmapPicture.getHeight()) {
+                    if (oldBitmap.getWidth() < oldBitmap.getHeight()) {
                         rotateAngle = 90;
                     }
                 }
-                bitmapPicture = remakeBitmap(bitmapPicture, bitmapPicture.getWidth(), bitmapPicture.getHeight(), rotateAngle, false, false);
+                Bitmap newBitmapPicture = remakeBitmap(oldBitmap, oldBitmap.getWidth(), oldBitmap.getHeight(), rotateAngle, false, false);
 
-                // Save to external storage
-                File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
+                String packageName = getContext().getPackageName();
+                File externalPath = Environment.getExternalStorageDirectory();
+                File file = new File(externalPath.getAbsolutePath() + "/Android/data/" + packageName + "/files/" + getImageFileName());
                 file.createNewFile();
 
                 FileOutputStream outStream = new FileOutputStream(file);
-                bitmapPicture.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                newBitmapPicture.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                 outStream.flush();
                 outStream.close();
-                bitmapPicture.recycle();
-                bitmapPicture = null;
-
+                newBitmapPicture.recycle();
                 onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();

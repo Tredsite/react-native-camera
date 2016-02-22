@@ -25,7 +25,9 @@ public class CameraViewPackage implements ReactPackage {
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactApplicationContext) {
-        return new ArrayList<>();
+        return Arrays.<NativeModule>asList(
+                new LockOrientation(reactApplicationContext, appActivity)
+        );
     }
 
     @Override

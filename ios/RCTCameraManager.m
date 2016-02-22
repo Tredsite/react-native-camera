@@ -9,7 +9,7 @@
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <AVFoundation/AVFoundation.h>
 #import <ImageIO/ImageIO.h>
-#import "Orientation.h"
+#import "LockOrientation.h"
 @implementation RCTCameraManager
 
 RCT_EXPORT_MODULE();
@@ -306,9 +306,9 @@ RCT_EXPORT_METHOD(stopCapture) {
 															   }];
 		
 		if (orientationNew == UIInterfaceOrientationPortrait) {
-			[Orientation setOrientation:1];
+			[LockOrientation setOrientation:1];
 		} else {
-			[Orientation setOrientation:2];
+			[LockOrientation setOrientation:2];
 		}
 		
 		self.orientationLast = orientationNew;
