@@ -275,7 +275,11 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
                 String packageName = getContext().getPackageName();
                 File externalPath = Environment.getExternalStorageDirectory();
-                File file = new File(externalPath.getAbsolutePath() + "/Android/data/" + packageName + "/files/" + getImageFileName());
+                String dirPath = externalPath.getAbsolutePath() + "/Android/data/" + packageName + "/files/";
+                File file = new File(dirPath + getImageFileName());
+
+                File dirFile = new File(dirPath);
+                dirFile.mkdirs();
                 file.createNewFile();
 
                 FileOutputStream outStream = new FileOutputStream(file);
