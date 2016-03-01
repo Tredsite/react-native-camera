@@ -1,11 +1,11 @@
-package com.baebae.reactnativecamera.cameralib.helpers;
+package com.baebae.reactnativecamera.cameralib.v1.utils;
 
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import com.baebae.reactnativecamera.cameralib.ui.CameraPreviewLayout;
+import com.baebae.reactnativecamera.cameralib.v1.CameraPreviewLayout;
 
 // This code is mostly based on the top answer here: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes
 public class CameraHandlerThread extends HandlerThread {

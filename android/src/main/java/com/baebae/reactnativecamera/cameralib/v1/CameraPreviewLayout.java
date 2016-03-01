@@ -1,4 +1,4 @@
-package com.baebae.reactnativecamera.cameralib.ui;
+package com.baebae.reactnativecamera.cameralib.v1;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,10 +14,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.baebae.reactnativecamera.cameralib.barcode.Scan;
-import com.baebae.reactnativecamera.cameralib.helpers.CameraHandlerThread;
-import com.baebae.reactnativecamera.cameralib.helpers.CameraUtils;
-import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
+import com.baebae.reactnativecamera.barcode.Scan;
+import com.baebae.reactnativecamera.cameralib.v1.utils.CameraHandlerThread;
+import com.baebae.reactnativecamera.cameralib.v1.utils.CameraUtils;
+import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
 import com.google.zxing.Result;
 
 import java.io.File;
@@ -56,10 +56,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         cameraLayout.setBackgroundColor(Color.BLACK);
         cameraLayout.addView(mPreview, 0);
 
-//        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-//        mPreview.setLayoutParams(relativeParams);
-
         addView(cameraLayout, 0);
         postDelayed(new Runnable() {
             @Override
@@ -67,8 +63,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                 moveToBack(cameraLayout);
             }
         }, 300);
-
-
     }
 
     private void moveToBack(View currentView) {

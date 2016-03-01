@@ -1,18 +1,15 @@
 package com.baebae.reactnativecamera;
 
-import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
+import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
 
 import android.app.Activity;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewGroupManager;
-
-import java.util.Map;
 
 public class CameraViewManager extends ViewGroupManager<CameraView> {
     public static final String REACT_CLASS = "CameraViewAndroid";

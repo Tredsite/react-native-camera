@@ -1,4 +1,4 @@
-package com.baebae.reactnativecamera.cameralib.barcode;
+package com.baebae.reactnativecamera.barcode;
 
 /**
  * Created by baebae on 1/3/16.

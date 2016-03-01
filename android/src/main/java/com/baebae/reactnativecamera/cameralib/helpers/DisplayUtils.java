@@ -7,33 +7,15 @@ import android.view.Display;
 import android.view.WindowManager;
 
 public class DisplayUtils {
-    public static Point getScreenResolution(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point screenResolution = new Point();
-        if (android.os.Build.VERSION.SDK_INT >= 13) {
-            display.getSize(screenResolution);
-        } else {
-            screenResolution.set(display.getWidth(), display.getHeight());
-        }
-
-        return screenResolution;
-    }
-
-    public static int getScreenOrientation(Context context)
-    {
+    public static int getScreenOrientation(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
 
-        int orientation = Configuration.ORIENTATION_UNDEFINED;
-        if(display.getWidth()==display.getHeight()){
-            orientation = Configuration.ORIENTATION_SQUARE;
-        } else{
-            if(display.getWidth() < display.getHeight()){
-                orientation = Configuration.ORIENTATION_PORTRAIT;
-            }else {
-                orientation = Configuration.ORIENTATION_LANDSCAPE;
-            }
+        int orientation = Configuration.ORIENTATION_PORTRAIT;
+        Point size = new Point();
+        display.getSize(size);
+        if(size.x >= size.y){
+            orientation = Configuration.ORIENTATION_LANDSCAPE;
         }
         return orientation;
     }

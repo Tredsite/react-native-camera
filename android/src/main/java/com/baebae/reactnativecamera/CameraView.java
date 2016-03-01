@@ -3,15 +3,13 @@ package com.baebae.reactnativecamera;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.view.Display;
 
-import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
-import com.baebae.reactnativecamera.cameralib.ui.CameraPreviewLayout;
+import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
+import com.baebae.reactnativecamera.cameralib.v1.CameraPreviewLayout;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.bridge.Arguments;

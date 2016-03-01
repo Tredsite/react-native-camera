@@ -1,8 +1,7 @@
-package com.baebae.reactnativecamera.cameralib.ui;
+package com.baebae.reactnativecamera.cameralib.v1;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Handler;
@@ -14,13 +13,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import com.baebae.reactnativecamera.cameralib.helpers.DisplayUtils;
-import com.facebook.react.uimanager.ViewGroupManager;
-
-import java.util.List;
 
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     private static final String TAG = "CameraPreview";
@@ -150,11 +144,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         parameters.setPictureSize(pictureSize.width, pictureSize.height);
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-//        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//            parameters.setRotation(270);
-//        } else {
-//            parameters.setRotation(90);
-//        }
 
         mCamera.setParameters(parameters);
         adjustViewSize(optimalSize, orientation);
@@ -217,7 +206,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         } catch (Exception e) {
 
         }
-
     }
 
 
@@ -251,8 +239,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         return result;
     }
 
-    private Camera.Size getBestPreviewSize(int width, int height)
-    {
+    private Camera.Size getBestPreviewSize(int width, int height) {
         Camera.Size result=null;
         if(mCamera == null) {
             return null;
@@ -300,53 +287,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         return result;
 
     }
-    private Camera.Size getOptimalPreviewSize() {
-        if(mCamera == null) {
-            return null;
-        }
-        List<Camera.Size> sizes = mCamera.getParameters().getSupportedPreviewSizes();
-        int w = getWidth();
-        int h = getHeight();
-        if (DisplayUtils.getScreenOrientation(getContext()) == Configuration.ORIENTATION_PORTRAIT) {
-            int portraitWidth = h;
-            h = w;
-            w = portraitWidth;
-        }
-
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) w / h;
-        if (sizes == null) return null;
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = h;
-
-        // Try to find an size match aspect ratio and size
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        // Cannot find the one match the aspect ratio, ignore the requirement
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-        return optimalSize;
-    }
 
     public void setAutoFocus(boolean state) {
-        if(mCamera != null && mPreviewing) {
+        if (mCamera != null && mPreviewing) {
             if(state == mAutoFocus) {
                 return;
             }

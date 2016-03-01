@@ -1,4 +1,4 @@
-package com.baebae.reactnativecamera.cameralib.helpers;
+package com.baebae.reactnativecamera.cameralib.v1.utils;
 
 import android.hardware.Camera;
 import android.util.Log;

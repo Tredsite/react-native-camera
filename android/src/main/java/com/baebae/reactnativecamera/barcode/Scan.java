@@ -1,4 +1,4 @@
-package com.baebae.reactnativecamera.cameralib.barcode;
+package com.baebae.reactnativecamera.barcode;
 
 import android.content.Context;
 import android.content.res.Configuration;
