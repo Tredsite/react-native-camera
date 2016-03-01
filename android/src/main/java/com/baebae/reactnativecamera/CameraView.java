@@ -9,7 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
-import com.baebae.reactnativecamera.cameralib.v1.CameraPreviewLayout;
+import com.baebae.reactnativecamera.cameralib.CameraPreviewLayout;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.bridge.Arguments;
