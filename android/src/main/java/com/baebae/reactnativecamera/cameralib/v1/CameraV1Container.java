@@ -36,12 +36,12 @@ public class CameraV1Container implements Camera.PreviewCallback {
     private Scan barcodeScanner = null;
     private CameraCallback callback = null;
 
-    public CameraV1Container(CameraInstanceManager cameraInstanceManager, View parentView, Activity appActivity) {
+    public CameraV1Container(CameraInstanceManager cameraInstanceManager, View parentView, Activity appActivity, Scan barcodeScanner) {
         this.cameraInstanceManager = cameraInstanceManager;
         this.parentView = parentView;
         this.appActivity = appActivity;
         callback = (CameraCallback)parentView;
-        barcodeScanner = new Scan(appActivity);
+        this.barcodeScanner = barcodeScanner;
     }
 
     public void startCamera() {
@@ -84,15 +84,16 @@ public class CameraV1Container implements Camera.PreviewCallback {
     }
 
     public void toggleTorch(boolean flagTorch) {
-        if(mCamera != null && CameraUtils.isFlashSupported(mCamera)) {
-            Camera.Parameters parameters = mCamera.getParameters();
-            if(!flagTorch) {
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-            } else {
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            }
-            mCamera.setParameters(parameters);
-        }
+//        mFlashState = flagTorch;
+//        if(mCamera != null && CameraUtils.isFlashSupported(mCamera)) {
+//            Camera.Parameters parameters = mCamera.getParameters();
+//            if(!flagTorch) {
+//                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+//            } else {
+//                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+//            }
+//            mCamera.setParameters(parameters);
+//        }
     }
 
     @Override

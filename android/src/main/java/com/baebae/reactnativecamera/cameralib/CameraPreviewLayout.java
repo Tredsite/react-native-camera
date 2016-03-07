@@ -21,6 +21,8 @@ import com.baebae.reactnativecamera.cameralib.v1.CameraView;
 import com.baebae.reactnativecamera.cameralib.v1.utils.CameraHandlerThread;
 import com.baebae.reactnativecamera.cameralib.v1.utils.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
+import com.baebae.reactnativecamera.cameralib.v2.CameraV2Container;
+import com.baebae.reactnativecamera.cameralib.v2.CameraV2Preview;
 import com.google.zxing.Result;
 
 import java.io.File;
@@ -32,15 +34,27 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
     private FrameLayout cameraLayout = null;
     private View cameraPreview;
     private static boolean flagPreviewInitialized = false;
+    private Boolean flagUsingV2Api = true;
+
     private CameraV1Container v1Container = null;
+    private CameraV2Container v2Container = null;
+
+    private Scan barcodeScanner = null;
 
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         super(context);
-        v1Container = new CameraV1Container(cameraInstanceManager, this, appActivity);
+        barcodeScanner = new Scan(appActivity);
+        if (flagUsingV2Api) {
+            v2Container = new CameraV2Container(this, appActivity, barcodeScanner);
+        } else {
+            v1Container = new CameraV1Container(cameraInstanceManager, this, appActivity, barcodeScanner);
+        }
+
     }
 
     protected  void changeCameraOrientation(final int orientation, final Runnable callback) {
         CameraView.changeOrientation(orientation);
+        CameraV2Preview.changeOrientation(orientation);
     }
 
     private void setupLayout(View view) {
@@ -84,7 +98,11 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
     }
 
     public void startCamera() {
-        v1Container.startCamera();
+        if (flagUsingV2Api) {
+            v2Container.startCamera();;
+        } else {
+            v1Container.startCamera();
+        }
     }
 
     public boolean isRunning() {
@@ -104,11 +122,20 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
         }
 
         flagPreviewInitialized = false;
-        v1Container.stopCamera();
+        if (flagUsingV2Api) {
+            v2Container.stopCamera();
+
+        } else {
+            v1Container.stopCamera();
+        }
     }
 
     public void setFlash(boolean flagTorch) {
-        v1Container.toggleTorch(flagTorch);
+        if (flagUsingV2Api) {
+            v2Container.toggleTorch(flagTorch);
+        } else {
+            v1Container.toggleTorch(flagTorch);
+        }
     }
 
 
@@ -120,7 +147,11 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
 
 
     public void takePicture(boolean flagMode) {
-        v1Container.takePicture(flagMode);
+        if (flagUsingV2Api) {
+            v2Container.takePicture(flagMode);
+        } else {
+            v1Container.takePicture(flagMode);
+        }
     }
 
     @Override

@@ -13,6 +13,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ImageReader;
 import android.util.Log;
 import android.util.Size;
+import android.util.SparseIntArray;
 import android.view.Surface;
 
 import com.facebook.stetho.common.android.FragmentCompat;
@@ -27,40 +28,6 @@ import java.util.concurrent.TimeUnit;
  * Created by baebae on 3/1/16.
  */
 public class CameraUtils {
-
-    /**
-     * Sets up member variables related to camera.
-     *
-     * @param width  The width of available size for camera preview
-     * @param height The height of available size for camera preview
-     */
-    @TargetApi(21)
-    private static List<Size> getCameraOutputSizes(Activity activity, int width, int height, ImageFormat format) {
-        try {
-            android.hardware.camera2.CameraManager cameraManager = (android.hardware.camera2.CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-            for (String cameraId : cameraManager.getCameraIdList()) {
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
-
-                // We don't use a front facing camera in this sample.
-                Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    continue;
-                }
-
-                StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-                if (map == null) {
-                    continue;
-                }
-
-                return Arrays.asList(map.getOutputSizes(ImageFormat.JPEG));
-            }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-
-        }
-        return null;
-    }
 
     /**
      * Given {@code choices} of {@code Size}s supported by a camera, choose the smallest one that
@@ -79,7 +46,7 @@ public class CameraUtils {
      * @return The optimal {@code Size}, or an arbitrary one if none were big enough
      */
     @TargetApi(21)
-    private static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
+    public static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
                                           int textureViewHeight, int maxWidth, int maxHeight, Size aspectRatio) {
 
         // Collect the supported resolutions that are at least as big as the preview Surface
@@ -91,8 +58,8 @@ public class CameraUtils {
         for (Size option : choices) {
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
                     option.getHeight() == option.getWidth() * h / w) {
-                if (option.getWidth() >= textureViewWidth &&
-                        option.getHeight() >= textureViewHeight) {
+                if (option.getWidth() > textureViewWidth &&
+                        option.getHeight() > textureViewHeight) {
                     bigEnough.add(option);
                 } else {
                     notBigEnough.add(option);
@@ -110,4 +77,48 @@ public class CameraUtils {
             return choices[0];
         }
     }
+
+    /**
+     * Camera state: Showing camera preview.
+     */
+    public static final int STATE_PREVIEW = 0;
+
+    /**
+     * Camera state: Waiting for the focus to be locked.
+     */
+    public static final int STATE_WAITING_LOCK = 1;
+
+    /**
+     * Camera state: Waiting for the exposure to be precapture state.
+     */
+    public static final int STATE_WAITING_PRECAPTURE = 2;
+
+    /**
+     * Camera state: Waiting for the exposure state to be something other than precapture.
+     */
+    public static final int STATE_WAITING_NON_PRECAPTURE = 3;
+
+    /**
+     * Camera state: Picture was taken.
+     */
+    public static final int STATE_PICTURE_TAKEN = 4;
+
+    /**
+     * Max preview width that is guaranteed by Camera2 API
+     */
+    public static final int MAX_PREVIEW_WIDTH = 1280;
+
+    /**
+     * Max preview height that is guaranteed by Camera2 API
+     */
+    public static final int MAX_PREVIEW_HEIGHT = 720;
+
+    public static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 90);
+        ORIENTATIONS.append(Surface.ROTATION_90, 0);
+        ORIENTATIONS.append(Surface.ROTATION_180, 270);
+        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
+
 }

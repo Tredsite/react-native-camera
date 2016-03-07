@@ -121,17 +121,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         CameraView.orientation = orientation;
     }
 
-    protected void changeCameraOrientation(int orientation) {
-        changeOrientation(orientation);
-        if (mCamera != null) {
-            mCamera.setDisplayOrientation(orientation);
-            if (optimalSize != null) {
-                adjustViewSize(optimalSize, orientation);
-            }
-        }
-    }
-
-
     /**
      * setup camera preview, rotation angle correctly.
      */
