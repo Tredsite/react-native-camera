@@ -233,13 +233,15 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
      */
     @TargetApi(21)
     private void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
-        try {
-            mBackgroundThread.join();
-            mBackgroundThread = null;
-            mBackgroundHandler = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (mBackgroundThread != null) {
+            mBackgroundThread.quitSafely();
+            try {
+                mBackgroundThread.join();
+                mBackgroundThread = null;
+                mBackgroundHandler = null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
     /**
@@ -260,30 +262,13 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        if (0 == mRatioWidth || 0 == mRatioHeight) {
-            setMeasuredDimension(width, height);
-        } else {
-            if (width < height * mRatioWidth / mRatioHeight) {
-                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
-            } else {
-                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
-            }
-        }
-    }
-
-
-    @Override
     public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
         openCamera(1920, 1080);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
-        configureTransform(width, height);
+        //configureTransform(width, height);
     }
 
     @Override
@@ -335,6 +320,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void openCamera(int width, int height) {
+        Log.d("CameraV2", "Opencamera");
         startBackgroundThread();
 
         setUpCameraOutputs(width, height);
@@ -458,7 +444,6 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
 //                    setAspectRatio(
 //                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
 //                }
-                adjustViewSize(mPreviewSize, orientation);
 
                 // Check if the flash is supported.
                 Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
@@ -514,6 +499,8 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                                 mPreviewRequest = mPreviewRequestBuilder.build();
                                 mCaptureSession.setRepeatingRequest(mPreviewRequest,
                                         mCaptureCallback, mBackgroundHandler);
+
+                                adjustViewSize(mPreviewSize, orientation);
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
                             }
@@ -626,7 +613,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
      */
     @TargetApi(21)
     public void stopCamera() {
-
+        Log.d("CameraV2", "stopCamera");
         try {
             mCameraOpenCloseLock.acquire();
             if (null != mCaptureSession) {
@@ -704,13 +691,13 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 height = parentHeight;
             }
             int width = (int)(height * cameraRatio);
-            setViewSize(height, width);
+            setViewSize(parentWidth, parentHeight);
         }
 
     }
 
     private Point convertSizeToLandscapeOrientation(Point size) {
-        if (getDisplaySurfaceOrientation() % 180 != 0) {
+        if (getDisplaySurfaceOrientation() % 180 == 0) {
             return size;
         } else {
             return new Point(size.y, size.x);
@@ -728,8 +715,8 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 int parentHeight = ((View)getParent()).getHeight();
                 layoutParams.topMargin = (parentHeight - height) / 2;
             } else {
-                layoutParams.width = height;
-                layoutParams.height = width;
+                layoutParams.width = width;
+                layoutParams.height = height;
                 layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
             }
             setLayoutParams(layoutParams);
