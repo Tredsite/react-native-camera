@@ -2,12 +2,8 @@ package com.baebae.reactnativecamera.cameralib;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
@@ -15,19 +11,16 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.baebae.reactnativecamera.barcode.Scan;
-import com.baebae.reactnativecamera.cameralib.helpers.CameraHelpers;
 import com.baebae.reactnativecamera.cameralib.v1.CameraV1Container;
 import com.baebae.reactnativecamera.cameralib.v1.CameraView;
-import com.baebae.reactnativecamera.cameralib.v1.utils.CameraHandlerThread;
-import com.baebae.reactnativecamera.cameralib.v1.utils.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.v1.utils.CameraInstanceManager;
 import com.baebae.reactnativecamera.cameralib.v2.CameraV2Container;
 import com.baebae.reactnativecamera.cameralib.v2.CameraV2Preview;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.UUID;
 
 public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
 
@@ -44,6 +37,13 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         super(context);
         barcodeScanner = new Scan(appActivity);
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            flagUsingV2Api = true;
+        } else {
+            flagUsingV2Api = false;
+        }
+        
         if (flagUsingV2Api) {
             v2Container = new CameraV2Container(this, appActivity, barcodeScanner);
         } else {
@@ -145,7 +145,6 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
     protected void onBarcodeScanned(Result str) {
     }
 
-
     public void takePicture(boolean flagMode) {
         if (flagUsingV2Api) {
             v2Container.takePicture(flagMode);
@@ -165,13 +164,18 @@ public class CameraPreviewLayout extends FrameLayout implements CameraCallback{
     }
 
     @Override
-    public void onResultBarcodeScanned(Result str) {
-        onBarcodeScanned(str);
-    }
-
-    @Override
     public void onResultCameraInitialized() {
         flagPreviewInitialized = true;
         registerLifecycleEventListener();
+    }
+
+    @Override
+    public void onPreviewImage(byte[] data, int width, int height) {
+        barcodeScanner.scanImage(data, width, height, new Scan.ResultCallback() {
+            @Override
+            public void onDecodeBarcode(Result result) {
+                onBarcodeScanned(result);
+            }
+        });
     }
 }

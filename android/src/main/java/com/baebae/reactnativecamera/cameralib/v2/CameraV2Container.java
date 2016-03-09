@@ -73,7 +73,7 @@ public class CameraV2Container {
     }
 
     public void takePicture(boolean flagMode) {
-        mPreview.takePicture();
+        mPreview.takePicture(flagMode);
     }
 
     /**
@@ -83,6 +83,8 @@ public class CameraV2Container {
 
     public final void setupLayout() {
         mPreview = new CameraV2Preview(appActivity);
+        mPreview.setCallback(callback);
+
         callback.onResultViewInitialized(mPreview);
     }
 

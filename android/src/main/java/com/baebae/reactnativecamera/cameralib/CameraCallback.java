@@ -10,6 +10,7 @@ import com.google.zxing.Result;
 public interface CameraCallback {
     public abstract void onResultViewInitialized(View view);
     public abstract void onResultImageCaptured(String fileName);
-    public abstract void onResultBarcodeScanned(Result str);
     public abstract void onResultCameraInitialized();
+
+    public abstract void onPreviewImage(byte[] data, int width, int height);
 }

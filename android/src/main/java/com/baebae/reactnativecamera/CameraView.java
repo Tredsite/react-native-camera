@@ -191,8 +191,12 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                 "topChange",
                 event
         );
-
-        stopCamera();
+        appActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                stopCamera();
+            }
+        });
     }
 
     protected void onOrientationChanged(boolean portraitMode) {

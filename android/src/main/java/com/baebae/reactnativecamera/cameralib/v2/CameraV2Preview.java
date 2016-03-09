@@ -10,6 +10,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -33,6 +35,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.telecom.Call;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
@@ -44,11 +47,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import com.baebae.reactnativecamera.cameralib.CameraCallback;
+import com.baebae.reactnativecamera.cameralib.helpers.CameraHelpers;
 import com.baebae.reactnativecamera.cameralib.v2.utils.CameraUtils;
 import com.baebae.reactnativecamera.cameralib.v2.utils.CompareSizesByArea;
 import com.baebae.reactnativecamera.cameralib.v2.utils.ImageSaver;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Semaphore;
@@ -57,16 +67,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * A {@link TextureView} that can be adjusted to a specified aspect ratio.
  */
-public class CameraV2Preview extends TextureView implements TextureView.SurfaceTextureListener {
+public class CameraV2Preview extends TextureView implements TextureView.SurfaceTextureListener{
 
-    private int mRatioWidth = 0;
-    private int mRatioHeight = 0;
     private Activity appActivity = null;
     private Size mPreviewSize;
 
-    private ImageReader mImageReader;
-    private ImageReader mImagePreviewReader ;
-    private File mFile;
+    private ImageReader mImageReaderCapture;
+    private ImageReader mImageBarcodeReader ;
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
     private String mCameraId;
@@ -80,7 +87,8 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     private int mState = CameraUtils.STATE_PREVIEW;
     private static int orientation = 90;
     private CameraCaptureSession mCaptureSession;
-
+    private CameraCallback cameraCallback = null;
+    private boolean flagPortraitMode = true;
     /**
      * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
      * still image is ready to be saved.
@@ -97,7 +105,6 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
         initCallbackListener();
     }
 
-
     public CameraV2Preview(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
@@ -106,13 +113,20 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
         super(context, attrs, defStyle);
     }
 
+    public void setCallback(CameraCallback callback) {
+        cameraCallback = callback;
+    }
+
+    private String strFileName = "";
     @TargetApi(21)
     private void initCallbackListener() {
         mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
 
             @Override
             public void onImageAvailable(ImageReader reader) {
-                mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+                strFileName = CameraHelpers.getDirPath(appActivity) + CameraHelpers.getImageFileName();
+
+                mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), strFileName));
             }
 
         };
@@ -122,8 +136,19 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             public void onImageAvailable(ImageReader reader) {
                 Image img = null;
                 img = reader.acquireLatestImage();
-                if (img != null)
+                if (img != null) {
+                    try {
+                        ByteBuffer buffer = img.getPlanes()[0].getBuffer();
+                        byte[] data = new byte[buffer.remaining()];
+                        buffer.get(data);
+                        int width = img.getWidth();
+                        int height = img.getHeight();
+                        cameraCallback.onPreviewImage(data, width, height);
+                    } catch (Exception e) {
+
+                    }
                     img.close();
+                }
             }
         };
 
@@ -244,22 +269,6 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             }
         }
     }
-    /**
-     * Sets the aspect ratio for this view. The size of the view will be measured based on the ratio
-     * calculated from the parameters. Note that the actual sizes of parameters don't matter, that
-     * is, calling setAspectRatio(2, 3) and setAspectRatio(4, 6) make the same result.
-     *
-     * @param width  Relative horizontal size
-     * @param height Relative vertical size
-     */
-    public void setAspectRatio(int width, int height) {
-        if (width < 0 || height < 0) {
-            throw new IllegalArgumentException("Size cannot be negative.");
-        }
-        mRatioWidth = width;
-        mRatioHeight = height;
-        requestLayout();
-    }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
@@ -371,16 +380,16 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
 //                        Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
 //                        new CompareSizesByArea());
                 Size largest = new Size(1920, 1080);
-                mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
+                mImageReaderCapture = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
 
-                Size largest1 = Collections.min(
+                Size largest1 = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.YUV_420_888)),
                         new CompareSizesByArea());
-                mImagePreviewReader = ImageReader.newInstance(largest1.getWidth(), largest1.getHeight(),
+                mImageBarcodeReader = ImageReader.newInstance(largest1.getWidth(), largest1.getHeight(),
                         ImageFormat.YUV_420_888, /*maxImages*/2);
-                mImagePreviewReader.setOnImageAvailableListener(mOnImagePreviewListener, mBackgroundHandler);
-                mImageReader.setOnImageAvailableListener(
+                mImageBarcodeReader.setOnImageAvailableListener(mOnImagePreviewListener, mBackgroundHandler);
+                mImageReaderCapture.setOnImageAvailableListener(
                         mOnImageAvailableListener, mBackgroundHandler);
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
@@ -469,14 +478,14 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             Log.d("CameraV2API: ", mPreviewSize.getWidth() + " " + mPreviewSize.getHeight());
             // This is the output Surface we need to start preview.
             Surface surface = new Surface(texture);
-            Surface mImageSurface = mImagePreviewReader.getSurface();
+            Surface mImageSurface = mImageBarcodeReader.getSurface();
 
             // We set up a CaptureRequest.Builder with the output Surface.
             mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mPreviewRequestBuilder.addTarget(surface);
             mPreviewRequestBuilder.addTarget(mImageSurface);
             // Here, we create a CameraCaptureSession for camera preview.
-            mCameraDevice.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface(), mImagePreviewReader.getSurface()),
+            mCameraDevice.createCaptureSession(Arrays.asList(surface, mImageReaderCapture.getSurface(), mImageSurface),
                     new CameraCaptureSession.StateCallback() {
 
                         @Override
@@ -519,7 +528,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     @TargetApi(21)
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
         //if (mFlashSupported) {
-        requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+        //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
         //}
     }
 
@@ -556,7 +565,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             // This is the CaptureRequest.Builder that we use to take a picture.
             final CaptureRequest.Builder captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(mImageReader.getSurface());
+            captureBuilder.addTarget(mImageReaderCapture.getSurface());
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
@@ -574,8 +583,8 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-                    Log.d("CameraV2API", mFile.toString());
                     unlockFocus();
+                    rotateImage(strFileName);
                 }
             };
 
@@ -586,6 +595,36 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
         }
     }
 
+    private void rotateImage(String fileName) {
+        try {
+            Bitmap oldBitmap = BitmapFactory.decodeFile(fileName);
+
+            int rotateAngle = 0;
+            if (flagPortraitMode) {
+                if (oldBitmap.getWidth() > oldBitmap.getHeight()) {
+                    rotateAngle = 90;
+                }
+            } else {
+                if (oldBitmap.getWidth() < oldBitmap.getHeight()) {
+                    rotateAngle = 90;
+                }
+            }
+            Bitmap newBitmapPicture = CameraHelpers.remakeBitmap(oldBitmap, oldBitmap.getWidth(), oldBitmap.getHeight(), rotateAngle, false, false);
+
+            File file = new File(CameraHelpers.getDirPath(appActivity) + CameraHelpers.getImageFileName());
+            file.createNewFile();
+
+            FileOutputStream outStream = new FileOutputStream(file);
+            newBitmapPicture.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+            outStream.flush();
+            outStream.close();
+            newBitmapPicture.recycle();
+            cameraCallback.onResultImageCaptured(file.getAbsolutePath());
+        } catch (Exception e) {
+
+        }
+
+    }
     /**
      * Unlock the focus. This method should be called when still image capture sequence is
      * finished.
@@ -624,13 +663,13 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 mCameraDevice.close();
                 mCameraDevice = null;
             }
-            if (null != mImageReader) {
-                mImageReader.close();
-                mImageReader = null;
+            if (null != mImageReaderCapture) {
+                mImageReaderCapture.close();
+                mImageReaderCapture = null;
             }
-            if (null != mImagePreviewReader) {
-                mImagePreviewReader.close();
-                mImagePreviewReader = null;
+            if (null != mImageBarcodeReader) {
+                mImageBarcodeReader.close();
+                mImageBarcodeReader = null;
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
@@ -643,7 +682,8 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     /**
      * Initiate a still image capture.
      */
-    public void takePicture() {
+    public void takePicture(boolean flagMode) {
+        flagPortraitMode = flagMode;
         lockFocus();
     }
 

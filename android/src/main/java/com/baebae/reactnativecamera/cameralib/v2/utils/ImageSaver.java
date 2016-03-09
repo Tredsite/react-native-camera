@@ -1,7 +1,10 @@
 package com.baebae.reactnativecamera.cameralib.v2.utils;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.media.Image;
+
+import com.baebae.reactnativecamera.cameralib.helpers.CameraHelpers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,25 +20,25 @@ public class ImageSaver implements Runnable {
      * The JPEG image
      */
     private final Image mImage;
-    /**
-     * The file we save the image into.
-     */
-    private final File mFile;
-
-    public ImageSaver(Image image, File file) {
+    private final String filePath;
+    public ImageSaver(Image image, String filePath) {
         mImage = image;
-        mFile = file;
+        this.filePath = filePath;
     }
 
     @TargetApi(21)
     @Override
     public void run() {
+
         ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
         byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);
         FileOutputStream output = null;
         try {
-            output = new FileOutputStream(mFile);
+            File file = new File(filePath);
+            file.createNewFile();
+
+            output = new FileOutputStream(file);
             output.write(bytes);
         } catch (IOException e) {
             e.printStackTrace();

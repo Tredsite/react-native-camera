@@ -102,12 +102,8 @@ public class CameraV1Container implements Camera.PreviewCallback {
         Camera.Size size = parameters.getPreviewSize();
         int width = size.width;
         int height = size.height;
-        barcodeScanner.scanImage(data, width, height, new Scan.ResultCallback() {
-            @Override
-            public void onDecodeBarcode(Result result) {
-                callback.onResultBarcodeScanned(result);
-            }
-        });
+        callback.onPreviewImage(data, width, height);
+
     }
 
     private boolean flagCapturePortraitMode = true;
