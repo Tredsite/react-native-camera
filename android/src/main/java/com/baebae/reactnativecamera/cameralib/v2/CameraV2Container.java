@@ -18,13 +18,13 @@ import com.baebae.reactnativecamera.cameralib.v2.utils.CameraV2HandlerThread;
  * Created by baebae on 3/5/16.
  */
 public class CameraV2Container {
-    private CameraV2Preview mPreview;
+    private CameraV2Preview mPreview = null;
     private View parentView;
     private Activity appActivity = null;
     private Scan barcodeScanner = null;
     private CameraCallback callback = null;
     private CameraV2HandlerThread mCameraHandlerThread = null;
-
+    private boolean flagTorch = false;
     public CameraV2Container(View parentView, Activity appActivity, Scan barcodeScanner) {
         this.parentView = parentView;
         this.appActivity = appActivity;
@@ -60,6 +60,10 @@ public class CameraV2Container {
     }
 
     public void toggleTorch(boolean flagTorch) {
+        this.flagTorch = flagTorch;
+        if (mPreview != null) {
+            mPreview.toggleTorch(flagTorch);
+        }
 //        mFlashState = flagTorch;
 //        if(mCamera != null && CameraUtils.isFlashSupported(mCamera)) {
 //            Camera.Parameters parameters = mCamera.getParameters();
@@ -83,6 +87,7 @@ public class CameraV2Container {
 
     public final void setupLayout() {
         mPreview = new CameraV2Preview(appActivity);
+        mPreview.toggleTorch(flagTorch);
         mPreview.setCallback(callback);
 
         callback.onResultViewInitialized(mPreview);

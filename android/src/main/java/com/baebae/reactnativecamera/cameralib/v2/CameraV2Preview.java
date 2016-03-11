@@ -79,7 +79,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     private String mCameraId;
     private CameraDevice mCameraDevice;
 
-    private boolean mFlashSupported = false;
+    private boolean mTorch = false;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
     private CaptureRequest.Builder mPreviewRequestBuilder;
@@ -457,7 +457,6 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 // Check if the flash is supported.
                 Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
                 //mFlashSupported = available == null ? false : available;
-                mFlashSupported = false;
                 mCameraId = cameraId;
                 return;
             }
@@ -502,7 +501,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 // Flash is automatically enabled when necessary.
-                                setAutoFlash(mPreviewRequestBuilder);
+                                setTorch(mPreviewRequestBuilder);
 
                                 // Finally, we start displaying the camera preview.
                                 mPreviewRequest = mPreviewRequestBuilder.build();
@@ -526,10 +525,10 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
     }
 
     @TargetApi(21)
-    private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
-        //if (mFlashSupported) {
-        //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-        //}
+    private void setTorch(CaptureRequest.Builder requestBuilder) {
+        if (mTorch) {
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+        }
     }
 
     /**
@@ -570,7 +569,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            setAutoFlash(captureBuilder);
+            setTorch(captureBuilder);
 
             // Orientation
             int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -635,7 +634,7 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
             // Reset the auto-focus trigger
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-            setAutoFlash(mPreviewRequestBuilder);
+            setTorch(mPreviewRequestBuilder);
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
             // After this, the camera will go back to the normal state of preview.
@@ -759,7 +758,13 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
                 layoutParams.height = height;
                 layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
             }
-            setLayoutParams(layoutParams);
+            final FrameLayout.LayoutParams resizedLayoutParam = layoutParams;
+            appActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setLayoutParams(resizedLayoutParam);
+                }
+            });
         } catch (Exception e) {
 
         }
@@ -782,5 +787,9 @@ public class CameraV2Preview extends TextureView implements TextureView.SurfaceT
 
     public static void changeOrientation(int orientation) {
         CameraV2Preview.orientation = orientation;
+    }
+
+    public void toggleTorch(boolean flagTorch) {
+        mTorch = flagTorch;
     }
 }
