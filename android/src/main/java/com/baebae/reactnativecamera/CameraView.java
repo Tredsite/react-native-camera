@@ -113,14 +113,14 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                             }
                         }
                     }
-                }
+                }*/
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
                 // TODO Auto-generated method stub
 
-            }*/
+            }
         };
 
     }
