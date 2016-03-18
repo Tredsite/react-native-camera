@@ -199,36 +199,25 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void setViewSize(int width, int height) {
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)getLayoutParams();
-        FrameLayout.LayoutParams parentParams = (FrameLayout.LayoutParams)((View)getParent()).getLayoutParams();
-        ViewGroup.LayoutParams parentParentParms =((View)getParent().getParent()).getLayoutParams();
-        if (getDisplaySurfaceOrientation() % 180 == 0) {
-            layoutParams.width = width;
-            layoutParams.height = height;
+        try {
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)getLayoutParams();
 
-            parentParams.width = width;
-            parentParams.height = height;
-            parentParams.gravity = Gravity.LEFT | Gravity.TOP;
-            layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-        } else {
-            layoutParams.width = height;
-            layoutParams.height = width;
+            if (getDisplaySurfaceOrientation() % 180 == 0) {
+                layoutParams.width = width;
+                layoutParams.height = height;
+                layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+                int parentHeight = ((View)getParent()).getHeight();
+                layoutParams.topMargin = (parentHeight - height) / 2;
+            } else {
+                layoutParams.width = height;
+                layoutParams.height = width;
+                layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+            }
+            setLayoutParams(layoutParams);
+        } catch (Exception e) {
 
-            parentParams.width = height;
-            parentParams.height = width;
-            parentParams.gravity = Gravity.LEFT | Gravity.TOP;
-            layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
         }
-        int parentHeight = ((View)getParent()).getHeight();
 
-        layoutParams.topMargin = (parentHeight - height) / 2;
-        setLayoutParams(layoutParams);
-        ((View)getParent()).setLayoutParams(parentParams);
-
-        ViewGroup.LayoutParams param = ((View)getParent().getParent()).getLayoutParams();
-        param.width = parentParams.width;
-        param.height = parentParams.height;
-        ((View)getParent().getParent()).setLayoutParams(param);
     }
 
 

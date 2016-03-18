@@ -1,5 +1,5 @@
 var React = require('react-native');
-var { StyleSheet, requireNativeComponent, PropTypes, NativeModules, DeviceEventEmitter } = React;
+var { StyleSheet, requireNativeComponent, PropTypes, NativeModules, DeviceEventEmitter, NativeAppEventEmitter } = React;
 
 var CAMERA_REF = 'camera';
 
@@ -41,10 +41,7 @@ var Camera = React.createClass({
       PropTypes.string,
       PropTypes.number
     ]),
-    torchMode: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number
-    ]),
+    torchMode: PropTypes.bool,
     defaultOnFocusComponent: PropTypes.bool,
     onFocusChanged: PropTypes.func,
     onZoomChanged: PropTypes.func
@@ -63,7 +60,7 @@ var Camera = React.createClass({
       captureMode: constants.CaptureMode.still,
       captureTarget: constants.CaptureTarget.cameraRoll,
       flashMode: constants.FlashMode.off,
-      torchMode: constants.TorchMode.off
+      torchMode: false
     };
   },
 
@@ -80,7 +77,7 @@ var Camera = React.createClass({
       this.setState(this.state);
     }).bind(this));
     this.cameraBarCodeReadListener = DeviceEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead);
-    this.cameraOrientationChanged = DeviceEventEmitter.addListener('CameraOrientationChanged', this._onOrientationChanged);
+    this.cameraOrientationChanged = NativeAppEventEmitter.addListener('CameraOrientationChanged', this._onOrientationChanged);
   },
 
   componentDidMount() {
@@ -136,10 +133,6 @@ var Camera = React.createClass({
       orientation = constants.Orientation[orientation];
     }
     
-    if (typeof torchMode === 'string') {
-      torchMode = constants.TorchMode[torchMode];
-    }
-
     if (typeof type === 'string') {
       type = constants.Type[type];
     }
@@ -161,8 +154,8 @@ var Camera = React.createClass({
   },
 
   _onOrientationChanged(e) {
-    var isPortrait = JSON.parse(e.mode);
-    this.props.onOrientationChanged && this.props.onOrientationChanged({ orientation: isPortrait ? 'portrait' : 'landscape' });
+    console.info("_onOrientationChanged" + e.mode);
+    this.props.onOrientationChanged && this.props.onOrientationChanged({orientation: e.mode});
   },
 
   capture(options, cb) {

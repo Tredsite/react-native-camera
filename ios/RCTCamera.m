@@ -66,7 +66,7 @@
   [self.manager changeFlashMode:flashMode];
 }
 
-- (void)setTorchMode:(NSInteger)torchMode
+- (void)setTorchMode:(BOOL)torchMode
 {
   [self.manager changeTorchMode:torchMode];
 }

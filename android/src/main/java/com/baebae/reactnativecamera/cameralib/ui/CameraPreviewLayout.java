@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -32,7 +34,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
     private Activity appActivity = null;
-    private boolean flagPreviewInitialized = false;
+    private static boolean flagPreviewInitialized = false;
     public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
         super(context);
         this.appActivity = appActivity;
@@ -42,24 +44,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
     protected  void changeCameraOrientation(final int orientation, final Runnable callback) {
         CameraView.changeOrientation(orientation);
-        if (mPreview != null) {
-            mPreview.changeCameraOrientation(orientation);
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    moveShow(cameraLayout);
-                    callback.run();
-                }
-            }, 300);
-            appActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    moveHide(cameraLayout);
-
-                }
-            });
-
-        }
     }
 
     public final void setupLayout(Camera camera) {
@@ -70,34 +54,35 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
         cameraLayout = new FrameLayout(getContext());
         cameraLayout.setBackgroundColor(Color.BLACK);
-        cameraLayout.addView(mPreview);
+        cameraLayout.addView(mPreview, 0);
 
 //        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 //        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 //        mPreview.setLayoutParams(relativeParams);
 
-        addView(cameraLayout);
-        moveToBack(cameraLayout);
+        addView(cameraLayout, 0);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                moveToBack(cameraLayout);
+            }
+        }, 300);
+
+
     }
 
     private void moveToBack(View currentView) {
         if (currentView != null) {
             ViewGroup viewGroup = ((ViewGroup) currentView.getParent());
-            viewGroup.invalidate();
             int index = viewGroup.indexOfChild(currentView);
             for (int i = 0; i < index; i++) {
-                viewGroup.bringChildToFront(viewGroup.getChildAt(i));
+                View v = viewGroup.getChildAt(i);
+                v.bringToFront();
+                Log.d("Test", "Move to back" + v);
+                viewGroup.bringChildToFront(v);
             }
-        }
-    }
-    private void moveHide(View currentView) {
-        if (currentView != null) {
-            currentView.setVisibility(GONE);
-        }
-    }
-    private void moveShow(View currentView) {
-        if (currentView != null) {
-            currentView.setVisibility(VISIBLE);
+            viewGroup.invalidate();
+            ((View)currentView.getParent()).requestLayout();
         }
     }
 
@@ -124,26 +109,40 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
                         setFlash(mFlashState);
                     }
                     flagPreviewInitialized = true;
+                    registerLifecycleEventListener();
                 }
             }, 1000);
             setAutoFocus(mAutofocusState);
         }
     }
 
+    protected void unregisterLifecycleEventListener() {
+    }
+    protected void registerLifecycleEventListener() {
+    }
+
     public void startCamera() {
         startCamera(-1);
     }
 
+    public boolean isRunning() {
+        return flagPreviewInitialized;
+    }
     public void stopCamera() {
+        if (!flagPreviewInitialized) {
+            return;
+        }
+
+        unregisterLifecycleEventListener();
+        if (cameraLayout == null && mCamera == null) {
+            Log.d("CrashCase", "stopCamera " + this + " " + mPreview + " " + mCamera);
+        }
         if (cameraLayout != null) {
             cameraLayout.removeView(mPreview);
             removeView(cameraLayout);
             cameraLayout = null;
         }
-
-        if (!flagPreviewInitialized) {
-            return;
-        }
+        flagPreviewInitialized = false;
         if (mCamera != null) {
             mPreview.stopCameraPreview();
             mPreview.setCamera(null, null);
@@ -155,7 +154,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
             mCameraHandlerThread.quit();
             mCameraHandlerThread = null;
         }
-        flagPreviewInitialized = false;
     }
 
     public void setFlash(boolean flag) {
@@ -251,7 +249,9 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
 
         // "RECREATE" THE NEW BITMAP, recycle old bitmap
         Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
-        bm.recycle();
+        if (resizedBitmap != bm) {
+            bm.recycle();
+        }
         return resizedBitmap;
     }
 
@@ -260,30 +260,33 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         @Override
         public void onPictureTaken(byte[] arg0, Camera arg1) {
             try {
-                Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
+                Bitmap oldBitmap = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
                 int rotateAngle = 0;
                 if (flagCapturePortraitMode) {
-                    if (bitmapPicture.getWidth() > bitmapPicture.getHeight()) {
+                    if (oldBitmap.getWidth() > oldBitmap.getHeight()) {
                         rotateAngle = 90;
                     }
                 } else {
-                    if (bitmapPicture.getWidth() < bitmapPicture.getHeight()) {
+                    if (oldBitmap.getWidth() < oldBitmap.getHeight()) {
                         rotateAngle = 90;
                     }
                 }
-                bitmapPicture = remakeBitmap(bitmapPicture, bitmapPicture.getWidth(), bitmapPicture.getHeight(), rotateAngle, false, false);
+                Bitmap newBitmapPicture = remakeBitmap(oldBitmap, oldBitmap.getWidth(), oldBitmap.getHeight(), rotateAngle, false, false);
 
-                // Save to external storage
-                File file = new File(getContext().getExternalFilesDir(null), getImageFileName());
+                String packageName = getContext().getPackageName();
+                File externalPath = Environment.getExternalStorageDirectory();
+                String dirPath = externalPath.getAbsolutePath() + "/Android/data/" + packageName + "/files/";
+                File file = new File(dirPath + getImageFileName());
+
+                File dirFile = new File(dirPath);
+                dirFile.mkdirs();
                 file.createNewFile();
 
                 FileOutputStream outStream = new FileOutputStream(file);
-                bitmapPicture.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+                newBitmapPicture.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                 outStream.flush();
                 outStream.close();
-                bitmapPicture.recycle();
-                bitmapPicture = null;
-
+                newBitmapPicture.recycle();
                 onImageFileSaved(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();

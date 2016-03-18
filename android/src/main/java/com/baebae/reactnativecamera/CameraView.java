@@ -31,7 +31,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         super(context, cameraInstanceManager, appActivity);
         this.appActivity = appActivity;
 
-        initializeOrientationListener();
     }
 
     public static final int ORIENTATION_UNKNOWN = -1;
@@ -93,9 +92,17 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
                                     }
                                 });
                                 onOrientationChanged(true);
-                            }
-                            if (mOrientation == 0) {
+                            } else if (mOrientation == 0) {
                                 appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                changeCameraOrientation(mOrientation, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lastOrientationValue = mOrientation;
+                                    }
+                                });
+                                onOrientationChanged(false);
+                            } else if (mOrientation == 180) {
+                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
                                 changeCameraOrientation(mOrientation, new Runnable() {
                                     @Override
                                     public void run() {
@@ -115,14 +122,14 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
 
             }*/
         };
-        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+
     }
 
     private static int getGeneralOrientation(int degrees){
         if(degrees >= 330 || degrees <= 30 ) return 90;
         if(degrees <= 300 && degrees >= 240) return 0;
         if(degrees <= 210 && degrees >= 160) return 90;
-        if(degrees <= 120 && degrees >= 60) return 0;
+        if(degrees <= 120 && degrees >= 60) return 180;
         return -1;
     }
 
@@ -135,12 +142,20 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         }
     };
 
-    public void registerLifecycleEventListener() {
+    @Override
+    protected void registerLifecycleEventListener() {
+        super.registerLifecycleEventListener();
         ((ThemedReactContext)getContext()).addLifecycleEventListener(this);
+        initializeOrientationListener();
+        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
     }
 
-    public void unregisterLifecycleEventListener() {
+    @Override
+    protected void unregisterLifecycleEventListener() {
+        super.unregisterLifecycleEventListener();
         ((ThemedReactContext)getContext()).removeLifecycleEventListener(this);
+        if (orientationListener != null)
+            sensorManager.unregisterListener(orientationListener);
     }
 
     @Override
@@ -168,6 +183,8 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     protected void onImageFileSaved(String imagePath) {
         super.onImageFileSaved(imagePath);
         WritableMap event = Arguments.createMap();
+        appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         event.putString("message", "file://" + imagePath);
         event.putString("type", "camera_capture");
         ReactContext reactContext = (ReactContext)getContext();
@@ -178,7 +195,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
         );
 
         stopCamera();
-        startCamera();
     }
 
     protected void onOrientationChanged(boolean portraitMode) {

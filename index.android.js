@@ -3,10 +3,7 @@
 var React = require('react-native');
 var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
 var ReactNativeAttributePayload=require('ReactNativeAttributePayload');
-var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView,
-  {
-    nativeOnly: {startCapture: 'true'}
-  }
+var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView
 );
 
 var merge = require('merge');
@@ -55,8 +52,13 @@ class AndroidCameraView extends React.Component {
 
   capture(callback) {
     this.onCaptureCompleted = callback;
+    var orientationMode = this.orientationMode;
+    if (!orientationMode) {
+      orientationMode = "portrait";
+    }
+
     this._root.setNativeProps({
-      startCapture: this.orientationMode
+      startCapture: orientationMode
     });
   }
 
@@ -79,6 +81,7 @@ class AndroidCameraView extends React.Component {
 AndroidCameraView.propTypes = {
   ...View.propTypes,
   startCapture: PropTypes.string,
+  startCamera: PropTypes.bool,
   onBarCodeRead: PropTypes.func,
   onOrientationChanged: PropTypes.func,
   torchMode:PropTypes.bool,
@@ -86,7 +89,8 @@ AndroidCameraView.propTypes = {
 
 AndroidCameraView.defaultProps = {
   onBarCodeRead: null,
-  startCapture: null,
+  startCapture: "",
+  startCamera: false,
   onOrientationChanged: null,
   torchMode: true
 };
