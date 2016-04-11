@@ -3,8 +3,7 @@
 var React = require('react-native');
 var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
 var ReactNativeAttributePayload=require('ReactNativeAttributePayload');
-var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView
-);
+var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView);
 
 var merge = require('merge');
 
@@ -93,6 +92,11 @@ AndroidCameraView.defaultProps = {
   startCamera: false,
   onOrientationChanged: null,
   torchMode: true
+};
+
+AndroidCameraView.checkDeviceAuthorizationStatus = function(cb) {
+  // The camera is allowed on Android when installing the app
+  cb(null, true);
 };
 
 module.exports = AndroidCameraView;
