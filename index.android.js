@@ -2,7 +2,6 @@
 
 var React = require('react-native');
 var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
-var ReactNativeAttributePayload=require('ReactNativeAttributePayload');
 var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView);
 
 var merge = require('merge');
