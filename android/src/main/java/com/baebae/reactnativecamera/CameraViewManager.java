@@ -19,12 +19,12 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
     private ReactApplicationContext reactApplicationContext = null;
     private CameraView cameraView = null;
     private CameraInstanceManager cameraInstanceManager;
+    private ApplicationActivity appActivity;
 
-    private Activity appActivity = null;
-    public CameraViewManager(ReactApplicationContext reactApplicationContext, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
+    public CameraViewManager(ReactApplicationContext reactApplicationContext, CameraInstanceManager cameraInstanceManager) {
         this.reactApplicationContext = reactApplicationContext;
+        this.appActivity = new ApplicationActivity(reactApplicationContext);
         this.cameraInstanceManager = cameraInstanceManager;
-        this.appActivity = appActivity;
     }
 
     @Override
