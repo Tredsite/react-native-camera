@@ -27,10 +27,9 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     private SensorEventListener orientationListener = null;
     private int mOrientation = -1;
 
-    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
-        super(context, cameraInstanceManager, appActivity);
-        this.appActivity = appActivity;
-
+    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager, ApplicationActivity appActivity) {
+        super(context, cameraInstanceManager, appActivity.getActivity());
+        this.appActivity = appActivity.getActivity();
     }
 
     public static final int ORIENTATION_UNKNOWN = -1;
