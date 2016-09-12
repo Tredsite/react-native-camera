@@ -25,9 +25,9 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 public class LockOrientation extends ReactContextBaseJavaModule {
     final private Activity mActivity;
 
-    public LockOrientation(ReactApplicationContext reactContext, final Activity activity) {
+    public LockOrientation(ReactApplicationContext reactContext) {
         super(reactContext);
-        mActivity = activity;
+        mActivity = getActivity();
     }
 
     @Override
