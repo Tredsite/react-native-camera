@@ -27,7 +27,7 @@ public class LockOrientation extends ReactContextBaseJavaModule {
 
     public LockOrientation(ReactApplicationContext reactContext) {
         super(reactContext);
-        mActivity = getActivity();
+        mActivity = getCurrentActivity();
     }
 
     @Override
