@@ -1,7 +1,7 @@
 'use strict';
 
-var React = require('react-native');
-var { requireNativeComponent, PropTypes, View, ReactNativeAttributePayload } = React;
+import React, { PropTypes } from 'react';
+import { requireNativeComponent, View, ReactNativeAttributePayload } from 'react-native'
 var NativeAndroidCameraView = requireNativeComponent('CameraViewAndroid', AndroidCameraView);
 
 var merge = require('merge');
