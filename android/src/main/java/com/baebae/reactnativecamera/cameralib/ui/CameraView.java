@@ -32,17 +32,20 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean mSurfaceCreated = false;
     private Camera.PreviewCallback mPreviewCallback;
     private boolean mFrontCamera = false;
-
-    private Activity appActivity = null;
+    private Context context = null;
     private static int orientation = 90;
+
+/*
     public CameraView(Activity context, Camera camera, Camera.PreviewCallback previewCallback) {
         super(context);
         this.appActivity = context;
         init(camera, previewCallback);
     }
+*/
 
     public CameraView(Context context, AttributeSet attrs, Camera camera, Camera.PreviewCallback previewCallback) {
         super(context, attrs);
+        this.context = context;
         init(camera, previewCallback);
     }
 
@@ -150,11 +153,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         parameters.setPictureSize(pictureSize.width, pictureSize.height);
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-//        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//            parameters.setRotation(270);
-//        } else {
-//            parameters.setRotation(90);
-//        }
 
         mCamera.setParameters(parameters);
         adjustViewSize(optimalSize, orientation);
@@ -162,11 +160,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void adjustViewSize(Camera.Size cameraSize, int orientation) {
 
-        Display display = appActivity.getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int parentWidth = size.x;
-        int parentHeight = size.y;
+        int parentWidth = context.getResources().getDisplayMetrics().widthPixels;
+        int parentHeight = context.getResources().getDisplayMetrics().heightPixels;
 
         Point ptCameraSize = convertSizeToLandscapeOrientation(new Point(cameraSize.width, cameraSize.height));
         if (orientation == 90) {
@@ -187,7 +182,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
             int width = (int)(height * cameraRatio);
             setViewSize(height, width);
         }
-
     }
 
     private Point convertSizeToLandscapeOrientation(Point size) {

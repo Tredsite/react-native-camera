@@ -19,11 +19,9 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
     private ReactApplicationContext reactApplicationContext = null;
     private CameraView cameraView = null;
     private CameraInstanceManager cameraInstanceManager;
-    private ApplicationActivity appActivity;
 
     public CameraViewManager(ReactApplicationContext reactApplicationContext, CameraInstanceManager cameraInstanceManager) {
         this.reactApplicationContext = reactApplicationContext;
-        this.appActivity = new ApplicationActivity(reactApplicationContext);
         this.cameraInstanceManager = cameraInstanceManager;
     }
 
@@ -37,7 +35,7 @@ public class CameraViewManager extends ViewGroupManager<CameraView> {
         if (cameraView != null && cameraView.isRunning()) {
             cameraView.stopCamera();
         }
-        cameraView = new CameraView(context, cameraInstanceManager, appActivity);
+        cameraView = new CameraView(context, cameraInstanceManager);
         return cameraView;
     }
 

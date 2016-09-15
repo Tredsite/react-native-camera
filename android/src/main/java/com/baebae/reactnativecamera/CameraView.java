@@ -9,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.Display;
+import android.view.OrientationEventListener;
 
 import com.baebae.reactnativecamera.cameralib.helpers.CameraInstanceManager;
 import com.baebae.reactnativecamera.cameralib.ui.CameraPreviewLayout;
@@ -22,14 +23,12 @@ import com.google.zxing.Result;
 
 public class CameraView extends CameraPreviewLayout implements LifecycleEventListener{
 
-    private Activity appActivity = null;
     private SensorManager sensorManager = null;
     private SensorEventListener orientationListener = null;
     private int mOrientation = -1;
 
-    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager, ApplicationActivity appActivity) {
-        super(context, cameraInstanceManager, appActivity.getActivity());
-        this.appActivity = appActivity.getActivity();
+    public CameraView(ThemedReactContext context, CameraInstanceManager cameraInstanceManager) {
+        super(context, cameraInstanceManager);
     }
 
     public static final int ORIENTATION_UNKNOWN = -1;
@@ -39,90 +38,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     private static long lastOrientationTime = 0;
     private static int lastOrientationValue = ORIENTATION_UNKNOWN;
     private boolean flagOrientationChanged = false;
-    private void initializeOrientationListener() {
-        sensorManager = (SensorManager)appActivity.getSystemService(Context.SENSOR_SERVICE);
-
-        orientationListener = new SensorEventListener() {
-            private static final int _DATA_X = 0;
-            private static final int _DATA_Y = 1;
-            private static final int _DATA_Z = 2;
-
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                /*float[] values = event.values;
-                int orientation = ORIENTATION_UNKNOWN;
-                float X = -values[_DATA_X];
-                float Y = -values[_DATA_Y];
-                float Z = -values[_DATA_Z];
-                float magnitude = X*X + Y*Y;
-                long now = System.currentTimeMillis();
-
-                // Don't trust the angle if the magnitude is small compared to the y value
-                if (magnitude * 4 >= Z*Z) {
-                    float OneEightyOverPi = 57.29577957855f;
-                    float angle = (float)Math.atan2(-Y, X) * OneEightyOverPi;
-                    orientation = 90 - (int)Math.round(angle);
-                    // normalize to 0 - 359 range
-                    while (orientation >= 360) {
-                        orientation -= 360;
-                    }
-                    while (orientation < 0) {
-                        orientation += 360;
-                    }
-                }
-                if (orientation != mOrientation) {
-                    int tmpOrientation = getGeneralOrientation(orientation);
-                    if (mOrientation != tmpOrientation) {
-                        mOrientation = tmpOrientation;
-                        lastOrientationTime = now;
-                        orientationKeepCount = 0;
-                        flagOrientationChanged = false;
-                    } else {
-                        orientationKeepCount ++;
-                        if (orientationKeepCount > ORIENTATION_KEEP_THRESHOLD && (now - lastOrientationTime) > ORIENTATION_TIME_THRESHOLD
-                                && flagOrientationChanged == false && lastOrientationValue != mOrientation) {
-                            flagOrientationChanged = true;
-                            if (mOrientation == 90) {
-                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                changeCameraOrientation(mOrientation, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        lastOrientationValue = mOrientation;
-                                    }
-                                });
-                                onOrientationChanged(true);
-                            } else if (mOrientation == 0) {
-                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                                changeCameraOrientation(mOrientation, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        lastOrientationValue = mOrientation;
-                                    }
-                                });
-                                onOrientationChanged(false);
-                            } else if (mOrientation == 180) {
-                                appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-                                changeCameraOrientation(mOrientation, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        lastOrientationValue = mOrientation;
-                                    }
-                                });
-                                onOrientationChanged(false);
-                            }
-                        }
-                    }
-                }*/
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                // TODO Auto-generated method stub
-
-            }
-        };
-
-    }
 
     private static int getGeneralOrientation(int degrees){
         if(degrees >= 330 || degrees <= 30 ) return 90;
@@ -145,16 +60,12 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     protected void registerLifecycleEventListener() {
         super.registerLifecycleEventListener();
         ((ThemedReactContext)getContext()).addLifecycleEventListener(this);
-        initializeOrientationListener();
-        sensorManager.registerListener(orientationListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
     protected void unregisterLifecycleEventListener() {
         super.unregisterLifecycleEventListener();
         ((ThemedReactContext)getContext()).removeLifecycleEventListener(this);
-        if (orientationListener != null)
-            sensorManager.unregisterListener(orientationListener);
     }
 
     @Override
@@ -182,7 +93,6 @@ public class CameraView extends CameraPreviewLayout implements LifecycleEventLis
     protected void onImageFileSaved(String imagePath) {
         super.onImageFileSaved(imagePath);
         WritableMap event = Arguments.createMap();
-        appActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         event.putString("message", "file://" + imagePath);
         event.putString("type", "camera_capture");

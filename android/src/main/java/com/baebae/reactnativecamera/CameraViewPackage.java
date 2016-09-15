@@ -17,22 +17,23 @@ import java.util.List;
 public class CameraViewPackage implements ReactPackage {
     private CameraViewManager cameraViewManager = null;
     private CameraInstanceManager cameraInstanceManager;
+
     public CameraViewPackage() {
         this.cameraInstanceManager = new CameraInstanceManager();
     }
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactApplicationContext) {
-        return Arrays.<NativeModule>asList(
-                new LockOrientation(reactApplicationContext)
-        );
+        List<NativeModule> modules = new ArrayList<>();
+        modules.add(new LockOrientation(reactApplicationContext));
+        return modules;
     }
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
         cameraViewManager = new CameraViewManager(reactApplicationContext, cameraInstanceManager);
         return Arrays.<ViewManager>asList(
-                cameraViewManager
+            cameraViewManager
         );
     }
 

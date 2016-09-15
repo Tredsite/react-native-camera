@@ -33,11 +33,11 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     private Scan barcodeScanner = null;
     private FrameLayout cameraLayout = null;
     private CameraInstanceManager cameraInstanceManager;
-    private Activity appActivity = null;
     private static boolean flagPreviewInitialized = false;
-    public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager, Activity appActivity) {
+
+
+    public CameraPreviewLayout(Context context, CameraInstanceManager cameraInstanceManager) {
         super(context);
-        this.appActivity = appActivity;
         barcodeScanner = new Scan(getContext());
         this.cameraInstanceManager = cameraInstanceManager;
     }
@@ -47,7 +47,7 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
     }
 
     public final void setupLayout(Camera camera) {
-        mPreview = new CameraView(appActivity, camera, this);
+        mPreview = new CameraView(getContext(), null, camera, this);
         if (cameraLayout == null) {
             removeView(cameraLayout);
         }
@@ -55,10 +55,6 @@ public class CameraPreviewLayout extends FrameLayout implements Camera.PreviewCa
         cameraLayout = new FrameLayout(getContext());
         cameraLayout.setBackgroundColor(Color.BLACK);
         cameraLayout.addView(mPreview, 0);
-
-//        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-//        mPreview.setLayoutParams(relativeParams);
 
         addView(cameraLayout, 0);
         postDelayed(new Runnable() {
