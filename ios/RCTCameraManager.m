@@ -118,13 +118,11 @@ RCT_EXPORT_VIEW_PROPERTY(onZoomChanged, BOOL)
 	self.flagCameraStarted = FALSE;
     self.session = [AVCaptureSession new];
     self.session.sessionPreset = AVCaptureSessionPresetHigh;
-
+#if !(TARGET_IPHONE_SIMULATOR)
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
     self.previewLayer.needsDisplayOnBoundsChange = YES;
-
+#endif
     self.sessionQueue = dispatch_queue_create("cameraManagerQueue", DISPATCH_QUEUE_SERIAL);
-
-
   }
   return self;
 }
